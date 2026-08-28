@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vHackBots/Git-Time-Machine.git"
+    "url": "git+https://gitlab.com/nandhu-44/Git-Time-Machine.git"
   },
   "keywords": [
     "git-tm",
@@ -34,12 +34,12 @@
     "commits",
     "commit-history",
     "source-control",
-    "github"
+    "gitlab"
   ],
   "author": "nandhu-44",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/vHackBots/Git-Time-Machine/issues"
+    "url": "https://gitlab.com/nandhu-44/Git-Time-Machine/issues"
   },
-  "homepage": "https://github.com/vHackBots/Git-Time-Machine#readme"
+  "homepage": "https://gitlab.com/nandhu-44/Git-Time-Machine#readme"
 }

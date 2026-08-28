@@ -128,7 +128,7 @@ async function getHelpText() {
     )}`,
     "",
     chalk.bold("More Info:"),
-    `  ${chalk.yellow("https://github.com/vHackBots/Git-Time-Machine")}`,
+    `  ${chalk.yellow("https://gitlab.com/nandhu-44/Git-Time-Machine")}`,
   ].join("\n");
 }
 
