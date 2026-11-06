@@ -1,6 +1,6 @@
 {
   "name": "git-tm",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "An elegant visual Git history explorer with real-time commit comparison capabilities",
   "main": "src/cli.js",
   "bin": {
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/nandhu-44/Git-Time-Machine.git"
+    "url": "git+https://github.com/nandhu-44/Git-Time-Machine.git"
   },
   "keywords": [
     "git-tm",
@@ -34,12 +34,12 @@
     "commits",
     "commit-history",
     "source-control",
-    "gitlab"
+    "github"
   ],
   "author": "nandhu-44",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/nandhu-44/Git-Time-Machine/issues"
+    "url": "https://github.com/nandhu-44/Git-Time-Machine/issues"
   },
-  "homepage": "https://gitlab.com/nandhu-44/Git-Time-Machine#readme"
+  "homepage": "https://github.com/nandhu-44/Git-Time-Machine#readme"
 }
