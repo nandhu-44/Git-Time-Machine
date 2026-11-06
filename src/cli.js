@@ -29,7 +29,7 @@ ${c.bold("Usage")}
 ${c.bold("Options")}
   -p, --port <number>   Port to listen on ${c.dim("(default 7890, next free port is used if busy)")}
       --host <address>  Interface to bind ${c.dim("(default 127.0.0.1)")}
-      --no-open         Do not open the browser
+  -o, --open            Open the browser once the server is running
       --no-avatars      Do not load author avatars from GitHub / Gravatar
   -v, --version         Print the version
   -h, --help            Print this help
@@ -37,7 +37,7 @@ ${c.bold("Options")}
 ${c.bold("Examples")}
   git-tm                 ${c.dim("current directory")}
   git-tm ../other-repo   ${c.dim("another repository")}
-  git-tm -p 8080 --no-open
+  git-tm -p 8080 --open
 
 ${c.dim(pkg.homepage)}
 `;
@@ -55,7 +55,8 @@ function parse() {
       options: {
         port: { type: "string", short: "p", default: "7890" },
         host: { type: "string", default: "127.0.0.1" },
-        "no-open": { type: "boolean", default: false },
+        open: { type: "boolean", short: "o", default: false },
+        "no-open": { type: "boolean", default: false }, // accepted for compatibility; opening is now opt-in
         "no-avatars": { type: "boolean", default: false },
         version: { type: "boolean", short: "v", default: false },
         help: { type: "boolean", short: "h", default: false },
@@ -127,7 +128,12 @@ async function main() {
   console.log(c.dim("  Press Ctrl+C to stop"));
   console.log();
 
-  if (!values["no-open"]) openBrowser(url);
+  if (values.open) openBrowser(url);
+
+  // Keep serving if something unexpected goes wrong; say what happened instead of dying silently.
+  const report = (err) => console.error(`${c.red("error")} ${err?.stack || err}`);
+  process.on("uncaughtException", report);
+  process.on("unhandledRejection", report);
 
   const stop = () => {
     server.close();

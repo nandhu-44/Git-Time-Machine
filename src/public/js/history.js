@@ -16,6 +16,7 @@ export function createHistory(app) {
       <div class="log-head"></div>
       <div class="log-cols" aria-hidden="true"><span class="c-graph"></span><span>Description</span><span class="c-author">Author</span><span class="c-date">Date</span><span class="c-sha">Commit</span></div>
       <div class="log-scroll" tabindex="-1"><div class="log-spacer"><div class="log-rows" role="listbox" aria-label="Commits"></div></div><div class="log-status"></div></div>
+      <div class="travel-bar" hidden></div>
     </section>
     <div class="resizer" role="separator" aria-orientation="vertical" title="Drag to resize"></div>
     <section class="detail-pane" hidden></section>`;
@@ -27,6 +28,7 @@ export function createHistory(app) {
   const status = $(".log-status", el);
   const pane = $(".detail-pane", el);
   const resizer = $(".resizer", el);
+  const bar = $(".travel-bar", el);
 
   let s = null; // list state
   let gen = 0; // request generation, to drop stale responses
@@ -110,8 +112,85 @@ export function createHistory(app) {
         ${app.ref ? html`<button class="chip" data-act="clear-ref" title="Show all branches">${raw(icons.close)}</button>` : ""}</div>
       ${chips.map(([k, label]) => html`<span class="chip filter" title="Remove filter"><span>${label}</span><button data-act="clear-filter" data-key="${k}" aria-label="Remove filter">${raw(icons.close)}</button></span>`)}
       <span class="spacer"></span>
-      <span class="muted small">${count ? `${s.done ? "" : "≥ "}${plural(count, "commit")}` : ""}</span>`);
+      <span class="muted small">${count ? `${s.done ? "" : "≥ "}${plural(count, "commit")}` : ""}</span>
+      <button class="btn btn-sm ${travel.picking ? "btn-primary" : ""}" data-act="travel-mode" aria-pressed="${travel.picking}" title="Pick two commits and see what changes between them (t)">${raw(icons.compare)} Time travel</button>`);
   }
+
+  // ---------------------------------------------------------------- time travel picking
+
+  const travel = { picking: false, from: null, to: null };
+
+  const brief = (c) => ({ hash: c.hash, subject: c.worktree || c.hash === WORKTREE ? "Uncommitted changes" : c.subject, date: c.date });
+
+  function renderBar() {
+    const show = travel.picking || travel.from || travel.to;
+    bar.hidden = !show;
+    el.classList.toggle("picking", travel.picking);
+    if (!show) return;
+    const slot = (which, c) =>
+      c
+        ? html`<span class="travel-slot filled ${which}"><span class="slot-label">${which === "from" ? "From" : "To"}</span>
+            <span class="slot-sha">${short(c.hash)}</span><span class="slot-subject">${c.subject}</span>
+            <button data-act="unpick" data-which="${which}" aria-label="Clear ${which}">${raw(icons.close)}</button></span>`
+        : html`<span class="travel-slot empty ${which}"><span class="slot-label">${which === "from" ? "From" : "To"}</span>
+            <span class="muted">${travel.picking && (which === "from" || travel.from) ? "click a commit" : "not set"}</span></span>`;
+    bar.innerHTML = String(html`${slot("from", travel.from)}
+      <span class="travel-arrow" aria-hidden="true">→</span>
+      ${slot("to", travel.to)}
+      <span class="spacer"></span>
+      <button class="icon-btn" data-act="travel-swap" title="Reverse direction" aria-label="Reverse direction" ${travel.from && travel.to ? "" : "disabled"}>${raw(icons.swap)}</button>
+      <button class="btn btn-sm btn-primary" data-act="travel-go" ${travel.from && travel.to ? "" : "disabled"}>Travel</button>
+      <button class="btn btn-sm btn-ghost" data-act="travel-cancel">Cancel</button>`);
+  }
+
+  function pick(which, c) {
+    travel[which] = c ? brief(c) : null;
+    renderBar();
+    paint(true);
+  }
+
+  function pickRow(c) {
+    if (travel.from?.hash === c.hash) return pick("from", null);
+    if (travel.to?.hash === c.hash) return pick("to", null);
+    if (!travel.from && !c.worktree) return pick("from", c);
+    pick("to", c);
+  }
+
+  function setPicking(on) {
+    travel.picking = on;
+    if (!on) {
+      travel.from = null;
+      travel.to = null;
+    }
+    renderHead();
+    renderBar();
+    paint(true);
+  }
+
+  function go() {
+    if (!travel.from || !travel.to) return;
+    const hash = `#/compare/${travel.from.hash}..${travel.to.hash}`;
+    setPicking(false);
+    app.navigate(hash);
+  }
+
+  bar.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-act]");
+    if (!t) return;
+    switch (t.dataset.act) {
+      case "unpick":
+        return pick(t.dataset.which, null);
+      case "travel-swap":
+        if (travel.to?.hash === WORKTREE) return;
+        [travel.from, travel.to] = [travel.to, travel.from];
+        renderBar();
+        return paint(true);
+      case "travel-go":
+        return go();
+      case "travel-cancel":
+        return setPicking(false);
+    }
+  });
 
   function renderStatus() {
     status.style.top = `${s.commits.length * ROW_H}px`;
@@ -143,20 +222,23 @@ export function createHistory(app) {
     if (i === s.selected) cls.push("selected");
     if (c.hash === openHash) cls.push("open");
     if (c.worktree) cls.push("worktree");
+    const picked = travel.from?.hash === c.hash ? "from" : travel.to?.hash === c.hash ? "to" : "";
+    if (picked) cls.push(`picked-${picked}`);
+    const pill = picked ? `<span class="pick-pill ${picked}">${picked === "from" ? "From" : "To"}</span>` : "";
     const merge = c.parents.length > 1;
     const graph = s.graph ? rowSvg(c.g, { height: ROW_H, maxLanes: MAX_LANES, merge: merge || c.worktree, head: c.hash === headHash }) : "";
     if (c.worktree) {
       return `<div class="${cls.join(" ")}" style="transform:translateY(${i * ROW_H}px)" data-i="${i}" role="option" aria-selected="${i === s.selected}">
         <div class="c-graph">${graph}</div>
         <div class="c-msg"><span class="subject">Uncommitted changes</span><span class="muted small">${plural(app.repo.changes, "file")}</span></div>
-        <div class="c-author"></div><div class="c-date"></div><div class="c-sha muted">—</div></div>`;
+        <div class="c-author"></div><div class="c-date"></div><div class="c-sha muted">${pill || "—"}</div></div>`;
     }
     return `<div class="${cls.join(" ")}" style="transform:translateY(${i * ROW_H}px)" data-i="${i}" role="option" aria-selected="${i === s.selected}">
       <div class="c-graph">${graph}</div>
       <div class="c-msg">${refBadges(c.refs, { max: 3 })}<span class="subject${merge ? " merge" : ""}">${esc(c.subject)}</span></div>
       <div class="c-author" title="${esc(c.author)} <${esc(c.email)}>">${avatar(c.author, c.email, 18)}<span>${esc(c.author)}</span></div>
       <div class="c-date" title="${esc(fullDate(c.date))}">${esc(relTime(c.date))}</div>
-      <div class="c-sha">${short(c.hash)}</div>
+      <div class="c-sha">${pill || short(c.hash)}</div>
     </div>`;
   }
 
@@ -173,30 +255,22 @@ export function createHistory(app) {
     if (!r) return;
     const i = Number(r.dataset.i);
     const c = s.commits[i];
-    if (e.shiftKey || e.metaKey || e.ctrlKey) {
-      // Second commit of a comparison.
-      const other = openHash;
-      if (other && other !== c.hash) {
-        const [a, b] = orderPair(other, c.hash);
-        return app.navigate(`#/compare/${a}..${b}`);
-      }
+    if (travel.picking) {
+      s.selected = i;
+      return pickRow(c);
+    }
+    if ((e.shiftKey || e.metaKey || e.ctrlKey) && openHash && openHash !== c.hash && openHash !== WORKTREE) {
+      // Travel from the open commit to the clicked one.
+      return app.navigate(`#/compare/${openHash}..${c.hash}`);
     }
     s.selected = i;
     app.navigate(`#/commit/${c.hash}`);
   });
 
-  /** Older commit first, so the diff reads forward in time. */
-  function orderPair(x, y) {
-    if (x === WORKTREE) return [y, x];
-    if (y === WORKTREE) return [x, y];
-    const ix = s.index.get(x) ?? -1;
-    const iy = s.index.get(y) ?? -1;
-    return ix > iy ? [x, y] : [y, x];
-  }
-
   head.addEventListener("click", (e) => {
     const act = e.target.closest("[data-act]");
     if (!act) return;
+    if (act.dataset.act === "travel-mode") setPicking(!travel.picking);
     if (act.dataset.act === "clear-ref") app.setRef(null);
     if (act.dataset.act === "clear-filter") {
       const f = { ...app.filter };
@@ -229,7 +303,10 @@ export function createHistory(app) {
       e.preventDefault();
       move(-1);
     } else if (e.key === "Enter" && s.selected >= 0) {
-      app.navigate(`#/commit/${s.commits[s.selected].hash}`);
+      if (travel.picking) pickRow(s.commits[s.selected]);
+      else app.navigate(`#/commit/${s.commits[s.selected].hash}`);
+    } else if (e.key === "t") {
+      setPicking(!travel.picking);
     }
   }
 
@@ -293,5 +370,17 @@ export function createHistory(app) {
     open,
     onKey,
     show: () => requestAnimationFrame(() => paint(true)),
+    /** Used by the commit detail pane: "Travel from / to here". */
+    travelPick(which, commit) {
+      travel.picking = true;
+      renderHead();
+      pick(which, commit);
+    },
+    /** Esc leaves time travel mode first. */
+    cancelPicking() {
+      if (!travel.picking && !travel.from && !travel.to) return false;
+      setPicking(false);
+      return true;
+    },
   };
 }
