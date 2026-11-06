@@ -16,7 +16,7 @@ const MAX_LINES = 2500;
 
 // ------------------------------------------------------------------ parsing
 
-export function parsePatch(text) {
+function parsePatch(text) {
   const hunks = [];
   let binary = false;
   let hunk = null;
@@ -153,7 +153,7 @@ function renderSplit(hunks, limit) {
   return { rows, cut: false };
 }
 
-export function renderPatch(text, { split = false, limit = MAX_LINES } = {}) {
+function renderPatch(text, { split = false, limit = MAX_LINES } = {}) {
   const { hunks, binary } = parsePatch(text);
   if (binary) return `<div class="diff-note">Binary file changed</div>`;
   if (!hunks.length) return `<div class="diff-note">No content changes (mode change, rename or whitespace only)</div>`;

@@ -193,8 +193,7 @@ svg.i,
 
 code,
 kbd,
-pre,
-.mono {
+pre {
   font-family: var(--mono);
 }
 
@@ -393,7 +392,6 @@ kbd {
   display: none;
 }
 
-.panel,
 .sidebar,
 .log-pane,
 .detail-pane,

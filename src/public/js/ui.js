@@ -4,13 +4,13 @@ export const WORKTREE = "WORKTREE";
 
 const avatarMap = Object.create(null);
 
-export async function api(path, params = {}, { method = "GET", signal } = {}) {
+export async function api(path, params = {}, { method = "GET" } = {}) {
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== "" && v !== false) qs.set(k, v === true ? "1" : String(v));
   }
   const url = `/api/${path}${qs.size ? `?${qs}` : ""}`;
-  const res = await fetch(url, { method, signal, headers: method === "GET" ? {} : { "x-git-tm": "1" } });
+  const res = await fetch(url, { method, headers: method === "GET" ? {} : { "x-git-tm": "1" } });
   let data;
   try {
     data = await res.json();
@@ -147,7 +147,6 @@ export const icons = {
   external: '<svg viewBox="0 0 16 16" class="i"><path d="M9 3h4v4M13 3 7 9M11 9.5V13H3V5h3.5"/></svg>',
   history: '<svg viewBox="0 0 16 16" class="i"><path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9L2.5 5.7"/><path d="M2.5 2.5v3.2h3.2M8 5v3.2l2 1.3"/></svg>',
   compare: '<svg viewBox="0 0 16 16" class="i"><circle cx="4" cy="4" r="1.5"/><circle cx="12" cy="12" r="1.5"/><path d="M4 5.5V10a2 2 0 0 0 2 2h4M12 10.5V6a2 2 0 0 0-2-2H6"/></svg>',
-  tree: '<svg viewBox="0 0 16 16" class="i"><path d="M2 4.5v8h12v-7H8L6.5 4H2z"/></svg>',
   dot: '<svg viewBox="0 0 16 16" class="i"><circle cx="8" cy="8" r="2.5" fill="currentColor"/></svg>',
 };
 
@@ -186,14 +185,6 @@ export function empty(title, detail = "") {
 
 export function errorBox(err) {
   return html`<div class="empty error"><strong>Something went wrong</strong><span>${err?.message || err}</span></div>`;
-}
-
-export function debounce(fn, ms) {
-  let t;
-  return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), ms);
-  };
 }
 
 export const storage = {

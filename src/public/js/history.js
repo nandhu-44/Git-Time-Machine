@@ -34,7 +34,7 @@ export function createHistory(app) {
   let detailCtl = null;
 
   function fresh() {
-    return { commits: [], index: new Map(), graph: true, layout: createLayout(), done: false, busy: false, selected: -1, base: null, maxLanes: 1, error: null };
+    return { commits: [], index: new Map(), graph: true, layout: createLayout(), done: false, busy: false, selected: -1, maxLanes: 1, error: null };
   }
 
   // ---------------------------------------------------------------- loading
@@ -142,7 +142,6 @@ export function createHistory(app) {
     const cls = ["row"];
     if (i === s.selected) cls.push("selected");
     if (c.hash === openHash) cls.push("open");
-    if (c.hash === s.base) cls.push("base");
     if (c.worktree) cls.push("worktree");
     const merge = c.parents.length > 1;
     const graph = s.graph ? rowSvg(c.g, { height: ROW_H, maxLanes: MAX_LANES, merge: merge || c.worktree, head: c.hash === headHash }) : "";
@@ -176,7 +175,7 @@ export function createHistory(app) {
     const c = s.commits[i];
     if (e.shiftKey || e.metaKey || e.ctrlKey) {
       // Second commit of a comparison.
-      const other = openHash || s.base;
+      const other = openHash;
       if (other && other !== c.hash) {
         const [a, b] = orderPair(other, c.hash);
         return app.navigate(`#/compare/${a}..${b}`);
