@@ -101,12 +101,35 @@ test("patch returns a unified diff for one file", async () => {
   assert.match(patch, /^\+there$/m);
 });
 
-test("range counts commits ahead and behind", async () => {
+const subjects = (list) => list.map((c) => c.subject);
+
+test("travelling forward applies commits and steps along first parents", async () => {
   const r = await repo.range("v0.1", "main");
-  assert.equal(r.aheadCount, 5);
-  assert.equal(r.behindCount, 0);
-  assert.equal(r.commits.length, 5);
-  assert.ok(r.mergeBase);
+  assert.equal(r.addedCount, 5);
+  assert.equal(r.removedCount, 0);
+  assert.equal(r.added.length, 5);
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(subjects(r.path), ["docs: expand readme", "Merge branch 'feature'", "Add binary <b>file</b>"]);
+  assert.equal(r.mergeBase, (await repo.resolve("v0.1")));
+});
+
+test("travelling back undoes commits and ends at the older commit", async () => {
+  const r = await repo.range("main", "v0.1");
+  assert.equal(r.addedCount, 0);
+  assert.equal(r.removedCount, 5);
+  assert.deepEqual(subjects(r.path), ["Merge branch 'feature'", "docs: expand readme", "Add greeting"]);
+});
+
+test("travelling across branches goes back to the common ancestor, then forward", async () => {
+  const r = await repo.range("feature", "main~2");
+  assert.equal(r.removedCount, 2);
+  assert.equal(r.addedCount, 1);
+  assert.deepEqual(subjects(r.path), ["feat: add feature file", "Add greeting", "docs: expand readme"]);
+});
+
+test("travelling to the same commit or the working tree has no path", async () => {
+  assert.deepEqual((await repo.range("main", "main")).path, []);
+  assert.deepEqual((await repo.range("main", WORKTREE)).path, []);
 });
 
 test("tree, blob and blame read historical content", async () => {

@@ -95,7 +95,7 @@ export function createServer(repo, { avatars = true, host = "127.0.0.1" } = {}) 
       }),
     "GET /api/range": async (q) => {
       const res = await repo.range(required(q, "from"), required(q, "to"));
-      return { ...res, avatars: attachAvatars(avatars, res.commits) };
+      return { ...res, avatars: attachAvatars(avatars, res.added, res.removed, res.path) };
     },
     "GET /api/tree": async (q) => repo.tree(required(q, "rev"), q.get("path") || ""),
     "GET /api/blob": async (q) => repo.blob(required(q, "rev"), required(q, "path")),
@@ -150,8 +150,9 @@ export function createServer(repo, { avatars = true, host = "127.0.0.1" } = {}) 
       json(res, 200, data);
     } catch (err) {
       const status = err instanceof GitError ? err.status : 500;
-      if (status >= 500 && !(err instanceof GitError)) console.error(err);
-      json(res, status, { error: err.message || "Internal error" });
+      if (status >= 500) console.error(`${req.method} ${req.url}: ${err instanceof GitError ? err.message : err.stack}`);
+      if (res.headersSent) res.destroy();
+      else json(res, status, { error: err.message || "Internal error" });
     }
   });
 }
