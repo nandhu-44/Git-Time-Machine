@@ -52,7 +52,7 @@ export function renderDetail(pane, app, hash, initial = {}) {
         <span class="sha-pill" title="${c.hash}">${isWt ? "working tree" : short(c.hash)}</span>
         ${isWt ? "" : html`<button class="icon-btn" data-act="copy" title="Copy full commit id" aria-label="Copy commit id">${raw(icons.copy)}</button>`}
         <span class="spacer"></span>
-        ${!isWt && remote ? html`<a class="btn btn-sm btn-ghost" href="${remote}/commit/${c.hash}" target="_blank" rel="noopener noreferrer">${raw(icons.external)} Open on ${hostName(remote)}</a>` : ""}
+        ${!isWt && remote ? html`<a class="btn btn-sm btn-ghost" href="${remote}/${remote.includes("bitbucket.org") ? "commits" : "commit"}/${c.hash}" target="_blank" rel="noopener noreferrer">${raw(icons.external)} Open on ${hostName(remote)}</a>` : ""}
         <a class="icon-btn" href="#/" title="Close (Esc)" aria-label="Close">${raw(icons.close)}</a>
       </div>
       <div class="detail-head">

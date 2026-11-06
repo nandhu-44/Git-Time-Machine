@@ -163,17 +163,25 @@ export function parseLog(out) {
   return commits;
 }
 
+/** Parse %D produced with --decorate=full, so local and remote branches are unambiguous. */
 function parseDecorations(s) {
   if (!s) return [];
   const refs = [];
   for (let part of s.split(", ")) {
     part = part.trim();
-    if (!part) continue;
-    if (part.startsWith("HEAD -> ")) refs.push({ type: "head", name: part.slice(8) });
-    else if (part === "HEAD") refs.push({ type: "detached", name: "HEAD" });
-    else if (part.startsWith("tag: ")) refs.push({ type: "tag", name: part.slice(5) });
-    else if (part.endsWith("/HEAD") || part === "refs/stash") continue;
-    else refs.push({ type: "branch", name: part });
+    let type = null;
+    if (part.startsWith("HEAD -> ")) {
+      part = part.slice(8);
+      type = "head";
+    } else if (part === "HEAD") {
+      refs.push({ type: "detached", name: "HEAD" });
+      continue;
+    } else if (part.startsWith("tag: ")) {
+      part = part.slice(5);
+    }
+    if (part.startsWith("refs/heads/")) refs.push({ type: type || "branch", name: part.slice(11) });
+    else if (part.startsWith("refs/remotes/") && !part.endsWith("/HEAD")) refs.push({ type: "remote", name: part.slice(13) });
+    else if (part.startsWith("refs/tags/")) refs.push({ type: "tag", name: part.slice(10) });
   }
   return refs;
 }
@@ -346,7 +354,7 @@ export class Repo {
    */
   async log({ ref, skip = 0, limit = 300, message, author, code, path: p, follow = false } = {}) {
     const max = Math.min(2000, Math.max(1, limit | 0));
-    const args = ["log", `--format=${LOG_FORMAT}`, "--date-order", `--skip=${Math.max(0, skip | 0)}`, `--max-count=${max}`];
+    const args = ["log", "--decorate=full", `--format=${LOG_FORMAT}`, "--date-order", `--skip=${Math.max(0, skip | 0)}`, `--max-count=${max}`];
     const filtered = Boolean(message || author || code || (p && follow));
     if (message) args.push("--fixed-strings", "--regexp-ignore-case", `--grep=${message}`);
     if (author) args.push("--regexp-ignore-case", `--author=${escapeRegex(author)}`);
@@ -377,7 +385,7 @@ export class Repo {
     const hash = await this.resolve(rev);
     if (hash === WORKTREE) return this.worktreeCommit();
     return this.cache.get(`commit:${hash}`, async () => {
-      const out = await this.run(["show", "-s", "--format=%H%x00%P%x00%an%x00%ae%x00%at%x00%cn%x00%ce%x00%ct%x00%D%x00%B", hash]);
+      const out = await this.run(["show", "-s", "--decorate=full", "--format=%H%x00%P%x00%an%x00%ae%x00%at%x00%cn%x00%ce%x00%ct%x00%D%x00%B", hash]);
       const [h, parents, an, ae, at, cn, ce, ct, refs, ...body] = out.split(FS);
       const message = body.join("").replace(/\s+$/, "");
       const nl = message.indexOf("\n");
@@ -512,7 +520,7 @@ export class Repo {
     const [counts, base, list] = await Promise.all([
       this.run(["rev-list", "--left-right", "--count", `${a}...${b}`]),
       tryGit(this.root, ["merge-base", a, b]),
-      this.run(["log", `--format=${LOG_FORMAT}`, "--date-order", "--max-count=500", `${a}..${b}`]),
+      this.run(["log", "--decorate=full", `--format=${LOG_FORMAT}`, "--date-order", "--max-count=500", `${a}..${b}`]),
     ]);
     const [behindCount, aheadCount] = counts.trim().split(/\s+/).map(Number);
     return { commits: parseLog(list), aheadCount, behindCount, mergeBase: base ? base.trim() : null };
