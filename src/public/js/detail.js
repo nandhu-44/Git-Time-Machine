@@ -65,8 +65,10 @@ export function renderDetail(pane, app, hash, initial = {}) {
           ${isWt ? "" : html`<dt>Contained in</dt><dd class="contains">${raw('<span class="muted small">…</span>')}</dd>`}
         </dl>
         <div class="detail-actions">
-          ${parents.length && !isWt ? html`<a class="btn btn-sm" href="#/compare/${c.hash}..${WORKTREE}" title="What changed from this commit to your working tree">Compare with working tree</a>` : ""}
-          ${!isWt && app.repo.head && c.hash !== app.repo.head ? html`<a class="btn btn-sm" href="#/compare/${c.hash}..HEAD" title="Changes from this commit to HEAD">Compare with HEAD</a>` : ""}
+          ${isWt ? "" : html`<button class="btn btn-sm" data-act="travel" data-which="from" title="Start a time travel here, then pick where to go">${raw(icons.compare)} Travel from here</button>
+            <button class="btn btn-sm" data-act="travel" data-which="to" title="Pick this as the destination of a time travel">Travel to here</button>`}
+          ${!isWt && app.repo.head && c.hash !== app.repo.head ? html`<a class="btn btn-sm btn-ghost" href="#/compare/${c.hash}..HEAD" title="From this commit to where you are now">To HEAD</a>` : ""}
+          ${!isWt && app.repo.changes ? html`<a class="btn btn-sm btn-ghost" href="#/compare/${c.hash}..${WORKTREE}" title="From this commit to your uncommitted working tree">To working tree</a>` : ""}
         </div>
       </div>
       <div class="detail-tabs" role="tablist">
@@ -213,6 +215,8 @@ export function renderDetail(pane, app, hash, initial = {}) {
     const t = e.target.closest("[data-act]");
     if (!t) return;
     switch (t.dataset.act) {
+      case "travel":
+        return app.views.history.travelPick(t.dataset.which, commit);
       case "copy":
         return copyText(commit.hash, "Commit id copied");
       case "blame":

@@ -235,25 +235,52 @@ function route() {
 // ------------------------------------------------------------------ live updates
 
 let fingerprint = null;
+let offline = false;
+
 async function poll() {
-  if (document.hidden) return;
+  if (document.hidden && !offline) return;
   try {
     const { fingerprint: fp } = await api("state");
     if (fingerprint && fp !== fingerprint) {
       await app.reloadRepo();
-      showBanner();
+      showBanner("changed");
     }
     fingerprint = fp;
   } catch {
-    /* server stopped; keep quiet */
+    /* the offline banner is shown by the gtm-offline event */
   }
 }
 
-function showBanner() {
+function showBanner(kind) {
   const b = $("#banner");
-  b.innerHTML = `<span>The repository changed on disk.</span><button class="btn btn-sm btn-primary" data-act="reload">Refresh history</button><button class="icon-btn" data-act="dismiss" aria-label="Dismiss">${icons.close}</button>`;
+  b.dataset.kind = kind;
+  b.innerHTML =
+    kind === "offline"
+      ? `<span class="spinner"></span><span>Lost connection to git-tm. Start it again in your terminal; this page reconnects by itself.</span>`
+      : `<span>The repository changed on disk.</span><button class="btn btn-sm btn-primary" data-act="reload">Refresh history</button><button class="icon-btn" data-act="dismiss" aria-label="Dismiss">${icons.close}</button>`;
   b.hidden = false;
 }
+
+window.addEventListener("gtm-offline", () => {
+  if (offline) return;
+  offline = true;
+  showBanner("offline");
+});
+
+window.addEventListener("gtm-online", async () => {
+  if (!offline) return;
+  offline = false;
+  $("#banner").hidden = true;
+  try {
+    await app.reloadRepo();
+  } catch {
+    return;
+  }
+  app.views.history.reload();
+  app.views.insights.invalidate();
+  route();
+  toast("Reconnected to git-tm", "success");
+});
 
 $("#banner").addEventListener("click", (e) => {
   const act = e.target.closest("[data-act]")?.dataset.act;
@@ -306,6 +333,7 @@ function onKey(e) {
     }
     if (document.body.classList.contains("sidebar-open")) return closeSidebar();
     if (app.current === "history") {
+      if (app.views.history.cancelPicking()) return;
       if (location.hash.startsWith("#/commit/")) return app.navigate("#/");
       if (app.filter) return app.setFilter(null);
     }
@@ -334,6 +362,7 @@ function onKey(e) {
       return;
   }
   if (app.current === "history") app.views.history.onKey(e);
+  else if (app.current === "compare") app.views.compare.onKey(e);
 }
 
 // ------------------------------------------------------------------ boot
@@ -371,7 +400,7 @@ async function boot() {
   app.views.insights = createInsights(app);
   route();
 
-  setInterval(poll, 4000);
+  setInterval(poll, 3000);
   poll();
   document.addEventListener("visibilitychange", poll);
 }

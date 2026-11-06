@@ -512,18 +512,38 @@ class Repo {
     };
   }
 
-  /** Commits reachable from `to` but not from `from`, plus ahead/behind counts. */
+  /**
+   * What happens when you move from commit `from` to commit `to`:
+   *   added   - commits only in `to` (applied by the move), newest first
+   *   removed - commits only in `from` (undone by the move), newest first
+   *   path    - snapshots to step through, in order: back from `from` along
+   *             its first parents to the common ancestor, then forward along
+   *             `to`'s first parents. The last entry is `to`.
+   */
   async range(from, to) {
     const a = await this.resolve(from);
     const b = await this.resolve(to);
-    if (a === WORKTREE || b === WORKTREE) return { commits: [], aheadCount: 0, behindCount: 0, mergeBase: null };
-    const [counts, base, list] = await Promise.all([
+    const empty = { added: [], removed: [], path: [], addedCount: 0, removedCount: 0, mergeBase: null };
+    if (a === WORKTREE || b === WORKTREE || a === b) return empty;
+    const log = (...args) => this.run(["log", "--decorate=full", `--format=${LOG_FORMAT}`, ...args]).then(parseLog);
+    const LIMIT = "--max-count=500";
+    const [counts, baseOut, added, removed, down, up] = await Promise.all([
       this.run(["rev-list", "--left-right", "--count", `${a}...${b}`]),
       tryGit(this.root, ["merge-base", a, b]),
-      this.run(["log", "--decorate=full", `--format=${LOG_FORMAT}`, "--date-order", "--max-count=500", `${a}..${b}`]),
+      log("--date-order", LIMIT, b, `^${a}`),
+      log("--date-order", LIMIT, a, `^${b}`),
+      log("--first-parent", LIMIT, a, `^${b}`),
+      log("--first-parent", LIMIT, b, `^${a}`),
     ]);
-    const [behindCount, aheadCount] = counts.trim().split(/\s+/).map(Number);
-    return { commits: parseLog(list), aheadCount, behindCount, mergeBase: base ? base.trim() : null };
+    const [removedCount, addedCount] = counts.trim().split(/\s+/).map(Number);
+    const mergeBase = baseOut ? baseOut.trim() : null;
+
+    const path = down.slice(1); // stepping back from `from` (itself excluded)
+    if (down.length && mergeBase && mergeBase !== b) path.push((await log("-1", mergeBase))[0]);
+    path.push(...up.reverse()); // then forward to `to`
+    if (!path.length || path[path.length - 1].hash !== b) path.push((await log("-1", b))[0]);
+
+    return { added, removed, path, addedCount, removedCount, mergeBase };
   }
 
   // ---------------------------------------------------------- browsing

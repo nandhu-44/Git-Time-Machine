@@ -37,13 +37,13 @@ Run it inside any repository (or any folder within one):
 git-tm
 ```
 
-Your browser opens at `http://localhost:7890`. Point it at another repository with `git-tm ../other-repo`.
+Then open `http://localhost:7890`, or start it with `git-tm --open` to open the browser for you. Point it at another repository with `git-tm ../other-repo`.
 
 | Option | Description |
 | --- | --- |
 | `-p, --port <number>` | Port to listen on (default `7890`; the next free port is used if it is busy) |
 | `--host <address>` | Interface to bind (default `127.0.0.1`) |
-| `--no-open` | Do not open the browser |
+| `-o, --open` | Open the browser once the server is running |
 | `--no-avatars` | Do not load author avatars from GitHub or Gravatar |
 | `-v, --version` | Print the version |
 | `-h, --help` | Print help |
@@ -67,11 +67,12 @@ Your browser opens at `http://localhost:7890`. Point it at another repository wi
 - View a file at any point in time, with `git blame` alongside
 - File history that follows renames
 
-**Compare**
-- Any two branches, tags or commits, or a commit against your working tree
+**Time travel (Compare)**
+- Travel from any commit, branch or tag to any other, or to your working tree, and see exactly what changes
+- Works in every direction: forward (commits applied), back in time (commits undone), or across branches (back to the common ancestor, then forward)
+- Step through the journey one snapshot at a time with a slider or the arrow keys; the diff updates at each step
+- Pick commits with a searchable picker, with *Time travel* mode in History (click From, then To), from a commit's detail pane, or by shift-clicking a second commit
 - *Direct* (`a..b`) or *since branch point* (`a...b`, like a pull request)
-- Ahead/behind counts, merge base, the commits in between and every changed file
-- Shift-click two commits in the history to compare them
 
 **Search**
 
@@ -88,9 +89,9 @@ Your browser opens at `http://localhost:7890`. Point it at another repository wi
 
 **Everything else**
 - Light and dark themes (follows your system by default)
-- Notices when the repository changes on disk and offers to refresh
+- Notices when the repository changes on disk and offers to refresh; if the git-tm process stops, the page says so and reconnects when it is back
 - Fetch all remotes with one click
-- Keyboard shortcuts: `j`/`k` to move, `Enter` to open, `/` to search, `Esc` to close, `g h`/`g c`/`g i` to switch views, `?` for help
+- Keyboard shortcuts: `j`/`k` to move, `Enter` to open, `t` for time travel mode, `←`/`→` to step through a journey, `/` to search, `Esc` to close, `g h`/`g c`/`g i` to switch views, `?` for help
 - Works on phones and tablets
 
 ## Privacy and safety

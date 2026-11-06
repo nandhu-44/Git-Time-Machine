@@ -9,8 +9,17 @@ export async function api(path, params = {}, { method = "GET" } = {}) {
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== "" && v !== false) qs.set(k, v === true ? "1" : String(v));
   }
-  const url = `/api/${path}${qs.size ? `?${qs}` : ""}`;
-  const res = await fetch(url, { method, headers: method === "GET" ? {} : { "x-git-tm": "1" } });
+  const query = qs.toString();
+  const url = `/api/${path}${query ? `?${query}` : ""}`;
+  let res;
+  try {
+    res = await fetch(url, { method, headers: method === "GET" ? {} : { "x-git-tm": "1" } });
+  } catch {
+    // No HTTP response at all: the git-tm process is not running (or was restarted elsewhere).
+    window.dispatchEvent(new Event("gtm-offline"));
+    throw Object.assign(new Error("Can't reach the git-tm server. Is it still running in your terminal?"), { offline: true });
+  }
+  window.dispatchEvent(new Event("gtm-online"));
   let data;
   try {
     data = await res.json();
