@@ -2,12 +2,14 @@
 // file and uncommitted changes. Returns its path.
 
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, appendFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, appendFileSync, realpathSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
 export function makeFixture() {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "git-tm-test-"));
+  // Canonical path, as git reports it: resolves symlinks (macOS /var ->
+  // /private/var) and Windows 8.3 short names (RUNNER~1).
+  const dir = realpathSync.native(mkdtempSync(path.join(os.tmpdir(), "git-tm-test-")));
   let t = 1700000000;
   const env = {
     ...process.env,
