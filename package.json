@@ -1,40 +1,35 @@
 {
   "name": "git-tm",
-  "version": "0.4.2",
-  "description": "An elegant visual Git history explorer with real-time commit comparison capabilities",
-  "main": "src/cli.js",
+  "version": "1.0.0",
+  "description": "Explore any Git repository's history in your browser: commit graph, diffs, blame, compare and insights. Zero dependencies.",
+  "type": "module",
   "bin": {
     "git-tm": "src/cli.js"
   },
+  "files": [
+    "src"
+  ],
   "scripts": {
-    "start": "node src/cli.js"
+    "start": "node src/cli.js",
+    "test": "node --test"
   },
-  "type": "module",
-  "dependencies": {
-    "boxen": "^8.0.1",
-    "center-align": "^1.0.1",
-    "chalk": "^4.1.2",
-    "commander": "^11.1.0",
-    "express": "^4.18.2",
-    "figlet": "^1.6.0",
-    "gradient-string": "^3.0.0",
-    "open": "^10.0.3",
-    "ora": "^7.0.1",
-    "simple-git": "^3.22.0"
+  "engines": {
+    "node": ">=18.3"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nandhu-44/Git-Time-Machine.git"
   },
   "keywords": [
+    "git",
     "git-tm",
     "git-time-machine",
-    "git",
-    "time",
-    "commits",
-    "commit-history",
-    "source-control",
-    "github"
+    "git-history",
+    "commit-graph",
+    "diff",
+    "blame",
+    "cli",
+    "visualization"
   ],
   "author": "nandhu-44",
   "license": "MIT",

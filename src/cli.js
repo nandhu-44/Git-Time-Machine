@@ -1,235 +1,140 @@
 #!/usr/bin/env node
+import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { parseArgs } from "node:util";
+import { openRepo } from "./git.js";
+import { createServer, listen } from "./server.js";
 
-import { program } from "commander";
-import path from "path";
-import fs from "fs";
-import chalk from "chalk";
-import boxen from "boxen";
-import centerAlign from "center-align";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-import { startServer } from "./server.js";
-import ora from "ora";
-import figlet from "figlet";
-import gradient from "gradient-string";
-import { readFile } from 'fs/promises';
+const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const useColor = process.stdout.isTTY && !process.env.NO_COLOR && process.env.TERM !== "dumb";
+const paint = (code) => (s) => (useColor ? `\x1b[${code}m${s}\x1b[0m` : String(s));
+const c = {
+  bold: paint("1"),
+  dim: paint("2"),
+  red: paint("31"),
+  green: paint("32"),
+  cyan: paint("36"),
+  accent: (s) => (useColor ? `\x1b[38;2;240;81;51m${s}\x1b[0m` : String(s)),
+};
 
-const packageJson = JSON.parse(
-  await readFile(
-    new URL('../package.json', import.meta.url)
-  )
-);
+const HELP = `
+${c.accent(c.bold("git-tm"))} ${c.dim(`v${pkg.version}`)}  Explore a repository's history in your browser
 
-const VERSION = packageJson.version;
-const DEFAULT_PORT = 7890;
-const GIT_ORANGE = "#e84d31";
-const WHITE = "#ffffff";
+${c.bold("Usage")}
+  git-tm [path] [options]
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+${c.bold("Options")}
+  -p, --port <number>   Port to listen on ${c.dim("(default 7890, next free port is used if busy)")}
+      --host <address>  Interface to bind ${c.dim("(default 127.0.0.1)")}
+      --no-open         Do not open the browser
+      --no-avatars      Do not load author avatars from GitHub / Gravatar
+  -v, --version         Print the version
+  -h, --help            Print this help
 
-async function displayBanner() {
-  const banner = await new Promise((resolve, reject) => {
-    figlet("Git Time Machine", {
-      font: "Standard",
-      horizontalLayout: "default",
-      verticalLayout: "default",
-      width: 80,
-      whitespaceBreak: true,
-    }, (err, data) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(data);
+${c.bold("Examples")}
+  git-tm                 ${c.dim("current directory")}
+  git-tm ../other-repo   ${c.dim("another repository")}
+  git-tm -p 8080 --no-open
+
+${c.dim(pkg.homepage)}
+`;
+
+function fail(message) {
+  console.error(`${c.red("error")} ${message}`);
+  console.error(c.dim("Run git-tm --help for usage."));
+  process.exit(1);
+}
+
+function parse() {
+  try {
+    return parseArgs({
+      allowPositionals: true,
+      options: {
+        port: { type: "string", short: "p", default: "7890" },
+        host: { type: "string", default: "127.0.0.1" },
+        "no-open": { type: "boolean", default: false },
+        "no-avatars": { type: "boolean", default: false },
+        version: { type: "boolean", short: "v", default: false },
+        help: { type: "boolean", short: "h", default: false },
+      },
     });
-  });
-
-  const bannerGradient = gradient(GIT_ORANGE, WHITE);
-  console.log(bannerGradient(banner));
+  } catch (err) {
+    fail(err.message);
+  }
 }
 
-function createSpinner(text) {
-  return ora({
-    text,
-    color: "cyan",
-    spinner: {
-      frames: ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
-    },
-  });
+function openBrowser(url) {
+  const [cmd, args] =
+    process.platform === "darwin"
+      ? ["open", [url]]
+      : process.platform === "win32"
+        ? ["cmd", ["/c", "start", "", url]]
+        : ["xdg-open", [url]];
+  try {
+    const child = spawn(cmd, args, { stdio: "ignore", detached: true, windowsHide: true });
+    child.on("error", () => {});
+    child.unref();
+  } catch {
+    /* no browser available; the URL is printed anyway */
+  }
 }
 
-async function showErrorAndHelp(errorMessage, exitCode = 1) {
-  console.log(chalk.yellow(`⚠️  Error: ${errorMessage}\n`));
-  console.log(await getHelpText() + "\n");
-  process.exit(exitCode);
+function tildify(p) {
+  const home = os.homedir();
+  return p === home || p.startsWith(home + path.sep) ? "~" + p.slice(home.length) : p;
 }
 
-async function validateGitRepo(repoPath) {
-  const spinner = createSpinner("Validating repository...");
-  spinner.start();
+async function main() {
+  const { values, positionals } = parse();
+  if (values.help) return console.log(HELP);
+  if (values.version) return console.log(pkg.version);
+  if (positionals.length > 1) fail("Only one repository path can be given");
 
-  const fullPath = path.resolve(process.cwd(), repoPath);
-  const gitPath = path.join(fullPath, ".git");
+  const port = Number(values.port);
+  if (!Number.isInteger(port) || port < 0 || port > 65535) fail(`Invalid port: ${values.port}`);
 
-  if (!fs.existsSync(fullPath)) {
-    spinner.fail(chalk.red("Repository validation failed"));
-    await showErrorAndHelp(
-      `Directory does not exist: ${chalk.yellow(fullPath)}`
-    );
+  const target = path.resolve(positionals[0] ?? ".");
+  let repo;
+  try {
+    repo = await openRepo(target);
+  } catch (err) {
+    fail(err.message);
   }
 
-  if (!fs.existsSync(gitPath)) {
-    spinner.fail(chalk.red("Repository validation failed"));
-    await showErrorAndHelp(
-      `Not a git repository: ${chalk.white(
-        fullPath
-      )}\nMake sure the directory contains a .git folder`
-    );
+  const server = createServer(repo, { avatars: !values["no-avatars"], host: values.host });
+  let actual;
+  try {
+    actual = await listen(server, port, values.host);
+  } catch (err) {
+    fail(`Could not start server: ${err.message}`);
   }
 
-  spinner.succeed(chalk.green("Repository validated successfully"));
-  return fullPath;
+  const shownHost = ["127.0.0.1", "::1", "0.0.0.0", "::"].includes(values.host) ? "localhost" : values.host;
+  const url = `http://${shownHost}:${actual}`;
+  const info = await repo.info().catch(() => ({}));
+  const where = info.branch ?? (info.head ? info.head.slice(0, 7) : "no commits yet");
+
+  console.log();
+  console.log(`  ${c.accent(c.bold("git-tm"))} ${c.dim(`v${pkg.version}`)}`);
+  console.log();
+  console.log(`  ${c.dim("repo")}  ${tildify(repo.root)} ${c.dim(`(${where})`)}`);
+  console.log(`  ${c.dim("url ")}  ${c.cyan(url)}`);
+  if (actual !== port && port !== 0) console.log(`  ${c.dim(`port ${port} was busy, using ${actual}`)}`);
+  console.log();
+  console.log(c.dim("  Press Ctrl+C to stop"));
+  console.log();
+
+  if (!values["no-open"]) openBrowser(url);
+
+  const stop = () => {
+    server.close();
+    process.exit(0);
+  };
+  process.on("SIGINT", stop);
+  process.on("SIGTERM", stop);
 }
 
-async function getHelpText() {
-  return [
-    "",
-    chalk.bold("Git Time Machine"),
-    chalk.dim("Interactive Git repository visualization tool"),
-    "",
-    chalk.bold("Usage:"),
-    `  $ ${chalk.hex(GIT_ORANGE)("git-tm")} ${chalk.cyan(
-      "<repository-path>"
-    )} [options]`,
-    "",
-    chalk.bold("Examples:"),
-    `  $ ${chalk.hex(GIT_ORANGE)("git-tm")} .                  ${chalk.dim(
-      "Start with current directory"
-    )}`,
-    `  $ ${chalk.hex(GIT_ORANGE)("git-tm")} ./my-project       ${chalk.dim(
-      "Start with specific repository"
-    )}`,
-    `  $ ${chalk.hex(GIT_ORANGE)("git-tm")} ${chalk.cyan(
-      "-p"
-    )} 8000 ./repo     ${chalk.dim("Start with custom port")}`,
-    "",
-    chalk.bold("Options:"),
-    `  ${chalk.cyan("-p, --port")} <number>    ${chalk.dim(
-      "Port to run the server (default: " + DEFAULT_PORT + ")"
-    )}`,
-    `  ${chalk.cyan("-h, --help")}             ${chalk.dim(
-      "Display this help message"
-    )}`,
-    `  ${chalk.cyan("-V, --version")}          ${chalk.dim(
-      "Output the version number"
-    )}`,
-    "",
-    chalk.bold("More Info:"),
-    `  ${chalk.yellow("https://github.com/nandhu-44/Git-Time-Machine")}`,
-  ].join("\n");
-}
-
-function createBox(content, options = {}) {
-  const terminalWidth = process.stdout.columns || 80;
-  const boxWidth = Math.min(70, terminalWidth - 4);
-
-  return boxen(content, {
-    padding: 1,
-    margin: {
-      top: 1,
-      bottom: 1,
-      left: 2,
-      right: 0,
-    },
-    borderStyle: "round",
-    borderColor: "cyan",
-    width: boxWidth,
-    textAlignment: "left",
-    float: "left",
-    ...options,
-  });
-}
-
-if (process.argv.includes('-v') || process.argv.includes('--version')) {
-  console.log("\n"+chalk.hex("#e84d31")("git-tm") + ` version: ${chalk.cyan(VERSION)}`);
-  process.exit(0);
-}
-
-program
-  .name("git-tm")
-  .description("Interactive Git repository visualization tool")
-  .version(VERSION, '-v, --version', 'Output the current version')
-  .argument("[repo-path]", "path to git repository")
-  .option(
-    "-p, --port <number>",
-    "port to run the server on",
-    DEFAULT_PORT.toString()
-  )
-  .helpOption(false)
-  .addOption(new program.Option("-h, --help", "display help").hideHelp())
-  .action(async (repoPath, options) => {
-    if (options.help) {
-      console.log(await getHelpText() + "\n");
-      process.exit(0);
-    }
-    if (!repoPath) {
-      console.log(await getHelpText() + '\n');
-      process.exit(0);
-    }
-
-    await displayBanner();
-    console.log();
-    
-    const fullPath = await validateGitRepo(repoPath);
-    process.chdir(fullPath);
-
-    const startingSpinner = createSpinner("Starting server...");
-    startingSpinner.start();
-
-    try {
-      const port = await startServer(parseInt(options.port));
-      startingSpinner.succeed(chalk.green("Server started successfully"));
-
-      console.log(
-        createBox(
-          [
-            chalk.cyan.bold("📂 Repository Information"),
-            `${chalk.white("Path:")} ${chalk.yellow(fullPath)}`,
-            "",
-            chalk.cyan.bold("🚀 Server Information"),
-            `${chalk.white("URL:")}  ${chalk.green(
-              `http://localhost:${port}`
-            )}`,
-            `${chalk.white("Port:")} ${chalk.cyan(port)}`,
-            "",
-            chalk.dim("Press Ctrl+C to stop the server"),
-          ].join("\n") 
-        )
-      );
-
-      await sleep(5000);
-
-      process.on("SIGINT", async () => {
-        console.log(
-          centerAlign(chalk.cyan("\nThanks for using Git Time Machine! 👋\n"))
-        );
-        process.exit(0);
-      });
-    } catch (error) {
-      startingSpinner.fail(chalk.red("Failed to start server"));
-      console.log(chalk.red(`Error: ${error.message}\n`));
-      process.exit(1);
-    }
-  })
-  .exitOverride(async (err) => {
-    if (err.code === "commander.missingArgument") {
-      console.log(await getHelpText() + "\n");
-      process.exit(1);
-    }
-    throw err;
-  });
-
-program.parse(process.argv);
+main();
