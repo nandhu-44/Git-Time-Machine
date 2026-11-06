@@ -116,15 +116,47 @@ test/              node:test suites
 
 ## Development
 
+There is nothing to install or build. Clone and run:
+
 ```bash
 git clone https://github.com/nandhu-44/Git-Time-Machine.git
 cd Git-Time-Machine
 node src/cli.js .
 ```
 
+Run the tests:
+
 ```bash
 npm test
 ```
+
+Use your working copy as the global `git-tm` command (undo with `npm unlink -g git-tm`):
+
+```bash
+npm link
+```
+
+Check exactly what would be published:
+
+```bash
+npm pack --dry-run
+```
+
+### Releasing
+
+Pushing a version tag publishes to npm from GitHub Actions ([`publish.yml`](.github/workflows/publish.yml)), using npm trusted publishing, so no npm token is stored anywhere.
+
+```bash
+npm version patch
+```
+
+```bash
+git push origin main --follow-tags
+```
+
+`npm version` bumps `package.json`, commits and creates the `vX.Y.Z` tag. Use `minor` or `major` as needed. The workflow checks that the tag matches `package.json`, runs the tests and publishes.
+
+GitLab CI ([`.gitlab-ci.yml`](.gitlab-ci.yml)) runs the same tests. It publishes only if an `NPM_TOKEN` CI/CD variable is set, so a mirrored tag is not published twice.
 
 ## Background
 
