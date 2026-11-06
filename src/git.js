@@ -89,14 +89,14 @@ const tryGit = (cwd, args, opts) => git(cwd, args, opts).catch(() => null);
 // ---------------------------------------------------------------- validation
 
 /** User supplied revision: never let it be parsed as an option. */
-export function checkRev(rev) {
+function checkRev(rev) {
   if (typeof rev !== "string" || !rev || rev.length > 512 || rev.startsWith("-") || /[\s\x00-\x1f\x7f]/.test(rev)) {
     throw new GitError(`Invalid revision: ${String(rev).slice(0, 80)}`, 400);
   }
   return rev;
 }
 
-export function checkPath(p) {
+function checkPath(p) {
   if (typeof p !== "string" || p.length > 4096 || p.includes("\0")) throw new GitError("Invalid path", 400);
   return p.replace(/^\/+/, "");
 }
@@ -140,7 +140,7 @@ class Cache {
 
 const LOG_FORMAT = ["%H", "%P", "%an", "%ae", "%at", "%cn", "%ce", "%ct", "%D", "%s"].join("%x00") + "%x1e";
 
-export function parseLog(out) {
+function parseLog(out) {
   const commits = [];
   for (const rec of out.split(RS)) {
     const r = rec.replace(/^\n/, "");
@@ -187,7 +187,7 @@ function parseDecorations(s) {
 }
 
 /** Merge `git diff --raw -z` and `--numstat -z` output into one file list. */
-export function parseFileChanges(rawOut, numOut) {
+function parseFileChanges(rawOut, numOut) {
   const files = [];
   const raw = rawOut.split(FS);
   for (let i = 0; i < raw.length - 1; ) {
@@ -238,7 +238,7 @@ function isBinary(buf) {
   return false;
 }
 
-export class Repo {
+class Repo {
   constructor(root, gitDir, bare, emptyTree) {
     this.root = root;
     this.gitDir = gitDir;
