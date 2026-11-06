@@ -42,11 +42,20 @@ test("serves the UI with a strict content security policy", async () => {
 });
 
 test("API returns JSON", async () => {
-  const res = await request("/api/log?limit=2");
+  const res = await request("/api/history?limit=2");
   assert.equal(res.status, 200);
   const data = JSON.parse(res.body);
   assert.equal(data.commits.length, 2);
   assert.ok(data.avatars["1234+grace@users.noreply.github.com"].startsWith("https://avatars.githubusercontent.com/u/1234"));
+});
+
+test("history for a branch avoids URLs that ad blockers filter", async () => {
+  // EasyPrivacy (used by uBlock Origin and others) blocks any URL containing "/log?ref=".
+  const res = await request("/api/history?rev=main&limit=1");
+  assert.equal(res.status, 200);
+  assert.equal(JSON.parse(res.body).commits.length, 1);
+  const ui = await request("/js/history.js");
+  assert.doesNotMatch(ui.body, /api\("log"/);
 });
 
 test("unknown revisions are 404, bad ones 400", async () => {

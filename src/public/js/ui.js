@@ -15,7 +15,12 @@ export async function api(path, params = {}, { method = "GET" } = {}) {
   try {
     res = await fetch(url, { method, headers: method === "GET" ? {} : { "x-git-tm": "1" } });
   } catch {
-    // No HTTP response at all: the git-tm process is not running (or was restarted elsewhere).
+    // No HTTP response. Either git-tm stopped, or the browser cancelled the
+    // request (ad blockers do this to URLs that look like tracking). Ask the
+    // server directly to tell the two apart.
+    if (await serverAlive()) {
+      throw new Error("Your browser blocked this request, most likely an ad blocker or privacy extension. Allow localhost in it, then reload.");
+    }
     window.dispatchEvent(new Event("gtm-offline"));
     throw Object.assign(new Error("Can't reach the git-tm server. Is it still running in your terminal?"), { offline: true });
   }
@@ -29,6 +34,14 @@ export async function api(path, params = {}, { method = "GET" } = {}) {
   if (!res.ok) throw Object.assign(new Error(data.error || `Request failed (${res.status})`), { status: res.status });
   if (data && data.avatars) Object.assign(avatarMap, data.avatars);
   return data;
+}
+
+async function serverAlive() {
+  try {
+    return (await fetch("/api/state", { cache: "no-store" })).ok;
+  } catch {
+    return false;
+  }
 }
 
 const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };

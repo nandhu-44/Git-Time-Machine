@@ -68,9 +68,9 @@ export function createServer(repo, { avatars = true, host = "127.0.0.1" } = {}) 
   const routes = {
     "GET /api/repo": async () => ({ ...(await repo.info()), avatars }),
     "GET /api/state": async () => ({ fingerprint: await repo.fingerprint() }),
-    "GET /api/log": async (q) => {
+    "GET /api/history": async (q) => {
       const res = await repo.log({
-        ref: q.get("ref") || undefined,
+        ref: q.get("rev") || undefined,
         skip: Number(q.get("skip")) || 0,
         limit: Number(q.get("limit")) || 300,
         message: q.get("message") || undefined,
@@ -104,7 +104,7 @@ export function createServer(repo, { avatars = true, host = "127.0.0.1" } = {}) 
       return { ...res, avatars: attachAvatars(avatars, Object.values(res.commits)) };
     },
     "GET /api/insights": async (q) => {
-      const res = await repo.insights(q.get("ref") || undefined);
+      const res = await repo.insights(q.get("rev") || undefined);
       return { ...res, avatars: attachAvatars(avatars, res.contributors) };
     },
     "POST /api/fetch": async () => {

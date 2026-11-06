@@ -82,7 +82,7 @@ export function createInsights(app) {
     const my = ++gen;
     el.innerHTML = String(html`<div class="page-head"><h1>Insights</h1><p class="muted">${app.ref ? html`History of <strong>${app.ref}</strong>` : "All branches and tags"} · merges excluded</p></div>${loading("Crunching history")}`);
     try {
-      const d = await api("insights", { ref: app.ref });
+      const d = await api("insights", { rev: app.ref });
       if (my !== gen) return;
       draw(d);
     } catch (err) {
