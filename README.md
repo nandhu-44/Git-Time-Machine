@@ -14,7 +14,7 @@ Built for [FOSS Hack 2025](https://fossunited.org/fosshack/2025), Git Time Machi
 
 ## Demo Video
 
-[Git Time Machine Demo](demo/git-tm-demo.mp4)
+[Watch the demo video](https://github.com/nandhu-44/Git-Time-Machine/blob/c733159/demo/git-tm-demo.mp4)
 
 ## Features
 
