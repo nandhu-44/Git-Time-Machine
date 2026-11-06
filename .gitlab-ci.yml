@@ -1,0 +1,33 @@
+# Tests run on every push, merge request and tag.
+# Releases are published from GitHub Actions. The publish job below only runs
+# if you add a masked NPM_TOKEN variable (Settings > CI/CD > Variables), for
+# example if you ever want GitLab to be the publisher instead.
+
+stages:
+  - test
+  - publish
+
+test:
+  stage: test
+  image: node:${NODE}
+  parallel:
+    matrix:
+      - NODE: ["18", "20", "22", "24"]
+  script:
+    - git --version
+    - npm test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+publish:
+  stage: publish
+  image: node:24
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/ && $NPM_TOKEN
+  script:
+    - test "${CI_COMMIT_TAG#v}" = "$(node -p "require('./package.json').version")"
+    - npm test
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - npm publish --access public
