@@ -121,12 +121,12 @@ document.addEventListener(
 
 export function refBadges(refs, { max = 4 } = {}) {
   if (!refs || !refs.length) return "";
-  const order = { head: 0, detached: 0, branch: 1, tag: 2 };
+  const order = { head: 0, detached: 0, branch: 1, remote: 2, tag: 3 };
   const sorted = [...refs].sort((a, b) => order[a.type] - order[b.type]);
   const shown = sorted.slice(0, max);
   const extra = sorted.length - shown.length;
   return html`<span class="refs">${shown.map(
-    (r) => html`<span class="ref ref-${r.type === "branch" && r.name.includes("/") ? "remote" : r.type}" title="${r.name}">${
+    (r) => html`<span class="ref ref-${r.type}" title="${r.name}">${
       r.type === "tag" ? raw(icons.tag) : r.type === "head" ? raw(icons.head) : ""
     }${r.name}</span>`,
   )}${extra > 0 ? html`<span class="ref ref-more" title="${sorted.slice(max).map((r) => r.name).join(", ")}">+${extra}</span>` : ""}</span>`;

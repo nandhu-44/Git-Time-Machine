@@ -1449,6 +1449,9 @@ mark.del {
 }
 
 .diff tr.hunk td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   background: var(--hunk-bg);
   color: var(--hunk-fg);
   padding-top: 3px;
@@ -2105,19 +2108,52 @@ dialog.help .btn {
 
 /* ------------------------------------------------------------------ responsive */
 
-@media (max-width: 1200px) {
-  .history.has-detail .c-author {
+/* Columns adapt to the width of the list itself, not the window. */
+.log-pane {
+  container-type: inline-size;
+}
+
+@container (max-width: 900px) {
+  .log-cols,
+  .row {
+    grid-template-columns: var(--graph-w, 40px) minmax(0, 1fr) 128px 96px 64px;
+  }
+
+  .no-graph .log-cols,
+  .no-graph .row {
+    grid-template-columns: 0 minmax(0, 1fr) 128px 96px 64px;
+  }
+}
+
+@container (max-width: 760px) {
+  .c-author {
     display: none;
   }
 
-  .history.has-detail .log-cols,
-  .history.has-detail .row {
+  .log-cols,
+  .row {
     grid-template-columns: var(--graph-w, 40px) minmax(0, 1fr) 96px 64px;
   }
 
-  .history.has-detail.no-graph .log-cols,
-  .history.has-detail.no-graph .row {
+  .no-graph .log-cols,
+  .no-graph .row {
     grid-template-columns: 0 minmax(0, 1fr) 96px 64px;
+  }
+}
+
+@container (max-width: 520px) {
+  .c-sha {
+    display: none;
+  }
+
+  .log-cols,
+  .row {
+    grid-template-columns: var(--graph-w, 40px) minmax(0, 1fr) 76px;
+  }
+
+  .no-graph .log-cols,
+  .no-graph .row {
+    grid-template-columns: 0 minmax(0, 1fr) 76px;
   }
 }
 
@@ -2185,25 +2221,6 @@ dialog.help .btn {
     position: fixed;
     z-index: 20;
     inset: var(--top-h) 6px 6px;
-  }
-
-  .log-cols,
-  .row,
-  .history.has-detail .log-cols,
-  .history.has-detail .row {
-    grid-template-columns: var(--graph-w, 40px) minmax(0, 1fr) 76px;
-  }
-
-  .no-graph .log-cols,
-  .no-graph .row,
-  .history.has-detail.no-graph .log-cols,
-  .history.has-detail.no-graph .row {
-    grid-template-columns: 0 minmax(0, 1fr) 76px;
-  }
-
-  .c-author,
-  .c-sha {
-    display: none !important;
   }
 
   .page {

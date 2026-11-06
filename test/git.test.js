@@ -148,3 +148,13 @@ test("webUrl converts remote URLs", () => {
   assert.equal(webUrl("https://user:token@github.com/a/b"), "https://github.com/a/b");
   assert.equal(webUrl("/local/path"), null);
 });
+
+test("local branches with slashes are not mistaken for remote branches", async () => {
+  fx.git("branch", "topic/x", "v0.1");
+  const { commits } = await repo.log({});
+  const tagged = commits.find((c) => c.refs.some((r) => r.name === "v0.1"));
+  assert.deepEqual(
+    tagged.refs.map((r) => [r.type, r.name]).sort(),
+    [["branch", "topic/x"], ["tag", "v0.1"]],
+  );
+});
