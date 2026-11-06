@@ -1,88 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>Git Time Machine</title>
-    <link rel="icon" type="image/svg+xml" href="./images/logo.svg" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/app.css" />
+    <script src="/js/theme.js"></script>
+    <link rel="modulepreload" href="/js/ui.js" />
+    <link rel="modulepreload" href="/js/graph.js" />
+    <link rel="modulepreload" href="/js/diff.js" />
+    <script type="module" src="/js/main.js"></script>
   </head>
   <body>
-    <div id="loader-container">
-      <div class="loader">
-        <svg viewBox="0 0 80 80">
-          <circle r="32" cy="40" cx="40" id="test"></circle>
-        </svg>
-      </div>
-      <div class="loader triangle">
-        <svg viewBox="0 0 86 80">
-          <polygon points="43 8 79 72 7 72"></polygon>
-        </svg>
-      </div>
-      <div class="loader">
-        <svg viewBox="0 0 80 80">
-          <rect height="64" width="64" y="8" x="8"></rect>
-        </svg>
-      </div>
-    </div>
-
-    <div id="app">
-      <header>
-        <div class="title-container">
-          <img
-            src="./images/logo.png"
-            alt="Git Time Machine Logo"
-            class="app-logo"
-            width="40"
-            height="40"
-          />
-          <h1><span style="color: #e84d31">Git</span>&nbsp;Time Machine</h1>
+    <div class="app" id="app">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="sidebar-toggle" aria-label="Toggle sidebar" title="Branches">
+          <svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12" /></svg>
+        </button>
+        <a class="brand" href="#/" aria-label="Git Time Machine">
+          <img src="/logo.svg" width="26" height="26" alt="" />
+          <span class="brand-name">Git Time Machine</span>
+        </a>
+        <div class="repo" id="repo"></div>
+        <nav class="tabs" id="tabs" aria-label="Views">
+          <a href="#/" data-view="history">History</a>
+          <a href="#/compare" data-view="compare">Compare</a>
+          <a href="#/insights" data-view="insights">Insights</a>
+        </nav>
+        <form class="search" id="search-form" role="search">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5 14 14" /></svg>
+          <input id="search" type="search" autocomplete="off" spellcheck="false"
+            placeholder="Search" aria-label="Search commits" />
+          <kbd>/</kbd>
+        </form>
+        <div class="actions">
+          <button class="icon-btn" id="fetch-btn" title="Fetch all remotes" aria-label="Fetch all remotes">
+            <svg viewBox="0 0 16 16"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10" /></svg>
+          </button>
+          <button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">
+            <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5" /><path d="M8 2.5v11a5.5 5.5 0 0 0 0-11z" fill="currentColor" stroke="none" /></svg>
+          </button>
+          <button class="icon-btn" id="help-btn" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
+            <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" /><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.8.6-.8 1.1v.4M8 11.6v.1" /></svg>
+          </button>
         </div>
-        <div id="repo-info"></div>
       </header>
-
-      <div class="layout">
-        <aside class="sidebar">
-          <h2>Branches</h2>
-          <div id="branch-list" class="branch-list"></div>
-        </aside>
-
-        <main>
-          <section id="timeline" class="timeline-section">
-            <h2>Commits</h2>
-            <div class="commits-container"></div>
-          </section>
-        </main>
-      </div>
+      <aside class="sidebar" id="sidebar" aria-label="References"></aside>
+      <main class="main" id="main"></main>
     </div>
-
-    <div id="comparison-panel">
-      <div class="comparison-header">
-        <h3>Compare Commits</h3>
-        <div class="commit-selectors">
-          <div class="select-group">
-            <label>Base Commit:</label>
-            <select id="base-commit-select" class="commit-select"></select>
-          </div>
-          <div class="select-group">
-            <label>Compare Commit:</label>
-            <select id="compare-commit-select" class="commit-select"></select>
-          </div>
-          <button id="compare-button" class="compare-button">Compare</button>
-          <button id="clear-button" class="clear-button">Clear</button>
-          <div class="dropdown">
-            <input type="checkbox" id="panel-toggle" />
-            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-      <div id="diff-output" class="diff-content"></div>
-    </div>
-
-    <script src="app.js"></script>
+    <div class="banner" id="banner" hidden></div>
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+    <dialog class="help" id="help">
+      <h2>Keyboard shortcuts</h2>
+      <dl>
+        <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>Next / previous commit</dd>
+        <dt><kbd>Enter</kbd></dt><dd>Open selected commit</dd>
+        <dt><kbd>Shift</kbd> + click</dt><dd>Compare two commits</dd>
+        <dt><kbd>/</kbd></dt><dd>Search</dd>
+        <dt><kbd>Esc</kbd></dt><dd>Close panel / clear search</dd>
+        <dt><kbd>g</kbd> <kbd>h</kbd> / <kbd>c</kbd> / <kbd>i</kbd></dt><dd>History / Compare / Insights</dd>
+      </dl>
+      <h2>Search syntax</h2>
+      <dl>
+        <dt><code>text</code></dt><dd>Commit message</dd>
+        <dt><code>author:name</code></dt><dd>Author name or email</dd>
+        <dt><code>path:src/app.js</code></dt><dd>Commits touching a path</dd>
+        <dt><code>code:fnName</code></dt><dd>Commits adding or removing a string</dd>
+        <dt><code>a1b2c3d</code></dt><dd>Jump to a commit</dd>
+      </dl>
+      <button class="btn" id="help-close">Close</button>
+    </dialog>
   </body>
 </html>
