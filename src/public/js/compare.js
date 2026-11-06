@@ -133,7 +133,7 @@ export function createCompare(app) {
     let commits = [];
     try {
       const sha = /^[0-9a-f]{4,64}$/i.test(q);
-      const res = await api("log", { limit: 40, message: q && !sha ? q : undefined });
+      const res = await api("history", { limit: 40, message: q && !sha ? q : undefined });
       commits = res.commits;
       if (sha) commits = commits.filter((c) => c.hash.startsWith(q.toLowerCase()));
       if (sha && !commits.length) {

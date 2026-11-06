@@ -56,7 +56,7 @@ export function createHistory(app) {
     renderStatus();
     try {
       const f = app.filter || {};
-      const res = await api("log", { ref: app.ref, skip: s.commits.length - (s.hasWorktree ? 1 : 0), limit: PAGE, message: f.message, author: f.author, code: f.code, path: f.path, follow: f.follow });
+      const res = await api("history", { rev: app.ref, skip: s.commits.length - (s.hasWorktree ? 1 : 0), limit: PAGE, message: f.message, author: f.author, code: f.code, path: f.path, follow: f.follow });
       if (my !== gen) return;
       let page = res.commits;
       if (!s.commits.length) {
