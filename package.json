@@ -1,6 +1,6 @@
 {
   "name": "git-tm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Explore any Git repository's history in your browser: commit graph, diffs, blame, compare and insights. Zero dependencies.",
   "type": "module",
   "bin": {
