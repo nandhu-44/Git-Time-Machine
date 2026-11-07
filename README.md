@@ -39,6 +39,14 @@ git-tm
 
 Then open `http://localhost:7890`, or start it with `git-tm --open` to open the browser for you. Point it at another repository with `git-tm ../other-repo`.
 
+It also works as a Git subcommand. Git runs any `git-<name>` program on your `PATH` as `git <name>`, so once installed you can type:
+
+```bash
+git tm
+```
+
+`git -C ../other-repo tm` works too. Use `git tm -h` for help: Git handles `git tm --help` itself and looks for a manual page instead.
+
 | Option | Description |
 | --- | --- |
 | `-p, --port <number>` | Port to listen on (default `7890`; the next free port is used if it is busy) |

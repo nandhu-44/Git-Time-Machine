@@ -25,6 +25,7 @@ ${c.accent(c.bold("git-tm"))} ${c.dim(`v${pkg.version}`)}  Explore a repository'
 
 ${c.bold("Usage")}
   git-tm [path] [options]
+  git tm [path] [options]    ${c.dim("same thing, as a Git subcommand (use -h for help)")}
 
 ${c.bold("Options")}
   -p, --port <number>   Port to listen on ${c.dim("(default 7890, next free port is used if busy)")}
