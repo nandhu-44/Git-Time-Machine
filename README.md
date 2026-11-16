@@ -9,6 +9,8 @@
   <a href="https://www.npmjs.com/package/git-tm"><img src="https://img.shields.io/npm/v/git-tm?color=f05133" alt="npm version"></a>
   <img src="https://img.shields.io/badge/dependencies-0-2ea44f" alt="zero dependencies">
   <img src="https://img.shields.io/npm/l/git-tm" alt="license">
+
+  <p><a href="https://git-time-machine.js.org"><b>Documentation</b></a> · <a href="https://www.npmjs.com/package/git-tm">npm</a></p>
 </div>
 
 <br>
@@ -88,7 +90,7 @@ git tm
 | --- | --- |
 | `fix login` | Commit messages |
 | `author:ada` | Commits by an author (name or email) |
-| `path:src/app.js` | Commits that touched a path, following renames |
+| `path:src/app.js` | Commits that touched a path |
 | `code:parseConfig` | Commits that added or removed a string (`git log -S`) |
 | `a1b2c3d` | Jumps straight to a commit |
 
@@ -166,6 +168,14 @@ git push origin main --follow-tags
 `npm version` bumps `package.json`, commits and creates the `vX.Y.Z` tag. Use `minor` or `major` as needed. The workflow checks that the tag matches `package.json`, runs the tests and publishes.
 
 GitLab CI ([`.gitlab-ci.yml`](.gitlab-ci.yml)) runs the same tests. It publishes only if an `NPM_TOKEN` CI/CD variable is set, so a mirrored tag is not published twice.
+
+### Website
+
+The documentation site at [git-time-machine.js.org](https://git-time-machine.js.org) is plain HTML in [`docs/`](docs), served by GitHub Pages from the `main` branch's `/docs` folder. There is no build step; preview it with any static server:
+
+```bash
+python3 -m http.server -d docs 8000
+```
 
 ## Background
 

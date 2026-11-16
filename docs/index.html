@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Git Time Machine: explore any Git history in your browser</title>
+    <meta name="description" content="git-tm is a zero-dependency npm CLI that opens any Git repository in your browser: commit graph, diffs, blame, insights, and time travel between any two commits." />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="canonical" href="https://git-time-machine.js.org/" />
+    <link rel="icon" href="logo.svg" type="image/svg+xml" />
+    <meta property="og:title" content="Git Time Machine" />
+    <meta property="og:description" content="Explore any Git repository's history in your browser. Commit graph, diffs, blame, insights and time travel. One command, zero dependencies." />
+    <meta property="og:image" content="https://git-time-machine.js.org/screenshot.png" />
+    <meta property="og:url" content="https://git-time-machine.js.org/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="site.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main">
+        <a class="brand" href="./"><img src="logo.svg" width="28" height="28" alt="" /><span>Git Time Machine</span></a>
+        <div class="nav-links">
+          <a href="guide.html">Docs</a>
+          <a href="https://github.com/nandhu-44/Git-Time-Machine">GitHub</a>
+          <a href="https://www.npmjs.com/package/git-tm">npm</a>
+        </div>
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5" /><path d="M8 2.5v11a5.5 5.5 0 0 0 0-11z" fill="currentColor" stroke="none" /></svg>
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero wrap">
+        <img class="hero-logo" src="logo.svg" width="84" height="84" alt="Git Time Machine logo" />
+        <h1>Travel through your <span class="accent">Git history</span>.</h1>
+        <p class="lede">
+          <strong>git-tm</strong> opens any repository in your browser: a commit graph, diffs, blame and insights,
+          and time travel between any two commits, forwards or backwards. One command, zero dependencies.
+        </p>
+        <div class="install">
+          <span class="prompt">$</span><code>npm install -g git-tm</code>
+          <button class="btn" type="button" data-copy="npm install -g git-tm">Copy</button>
+        </div>
+        <p class="hint">Then run <code>git tm</code> inside any repository and open <code>http://localhost:7890</code>.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="guide.html">Read the docs</a>
+          <a class="btn" href="https://github.com/nandhu-44/Git-Time-Machine">View on GitHub</a>
+        </div>
+        <img class="shot" src="screenshot.png" width="2560" height="1520" alt="Git Time Machine showing a commit graph with branches and merges, and a merge commit's changes" />
+      </section>
+
+      <section class="section wrap">
+        <div class="section-head">
+          <h2>Everything Git knows, in one fast page</h2>
+          <p>Built on the <code>git</code> you already have. Nothing to configure, nothing to upload.</p>
+        </div>
+        <div class="features">
+          <article class="card">
+            <h3><svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2.2" /><circle cx="6" cy="19" r="2.2" /><circle cx="18" cy="8" r="2.2" /><path d="M6 7.2v9.6M18 10.2c0 4.5-12 3-12 6.6" /></svg>Commit graph</h3>
+            <p>Branch lanes, merges and badges for branches, remotes and tags. Smooth even with tens of thousands of commits.</p>
+          </article>
+          <article class="card">
+            <h3><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6" /><path d="M4 4v4.6h4.6M12 7.5v4.8l3 2" /></svg>Time travel</h3>
+            <p>Pick any two points in history and see what changes on the way: forward, back in time, or across branches, one step at a time.</p>
+          </article>
+          <article class="card">
+            <h3><svg viewBox="0 0 24 24"><path d="M5 4h9l5 5v11H5z M14 4v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>Diffs that read well</h3>
+            <p>Unified or split view, word-level highlights, hide whitespace, full-file context, and diffs against any parent of a merge.</p>
+          </article>
+          <article class="card">
+            <h3><svg viewBox="0 0 24 24"><path d="M3 6.5v12h18v-10h-9L10 6.5z" /></svg>Browse and blame</h3>
+            <p>Walk the file tree as it was at any commit, read any file at any point in time with <code>git blame</code> alongside.</p>
+          </article>
+          <article class="card">
+            <h3><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></svg>Search</h3>
+            <p>By message, author, path or code with <code>git log -S</code>. Paste a commit id to jump straight to it.</p>
+          </article>
+          <article class="card">
+            <h3><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>Insights</h3>
+            <p>An activity heatmap for the past year, your project's weekly rhythm, and its top contributors.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section wrap">
+        <div class="split">
+          <div>
+            <h2>Time travel between any two commits</h2>
+            <p>Choose a <em>From</em> and a <em>To</em>: commits, branches, tags or your working tree. git-tm tells you which way you are going and what changes along the way.</p>
+            <div class="dirs">
+              <span class="pill forward">Forward in time</span>
+              <span class="pill back">Back in time</span>
+              <span class="pill across">Across branches</span>
+            </div>
+            <ul>
+              <li>Step through every snapshot on the way with a slider or the arrow keys.</li>
+              <li>See exactly which commits are applied and which are undone.</li>
+              <li>Reverse the trip with one click.</li>
+            </ul>
+            <p><a href="guide.html#time-travel">How time travel works →</a></p>
+          </div>
+          <img src="img/time-travel.jpg" width="1920" height="1140" loading="lazy" alt="Comparing two commits: forward in time, 11 commits applied, stepping through 6 snapshots" />
+        </div>
+      </section>
+
+      <section class="section wrap">
+        <div class="split reverse">
+          <img src="img/pick.jpg" width="1920" height="1140" loading="lazy" alt="Time travel mode in History with a From and a To commit selected" />
+          <div>
+            <h2>Pick commits right from the graph</h2>
+            <p>Press <kbd>t</kbd> in History, click where you start and where you want to go, then hit <strong>Travel</strong>. Or use <em>Travel from here</em> on any commit.</p>
+            <p>Everything has a keyboard shortcut: <kbd>j</kbd> <kbd>k</kbd> to move, <kbd>/</kbd> to search, <kbd>?</kbd> for the full list.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section wrap">
+        <div class="section-head">
+          <h2>Small, private and safe</h2>
+          <p>git-tm runs on your machine and only reads your repository.</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>0</b><span>runtime dependencies</span></div>
+          <div class="stat"><b>~50 kB</b><span>npm package</span></div>
+          <div class="stat"><b>127.0.0.1</b><span>only reachable from your machine</span></div>
+          <div class="stat"><b>Read-only</b><span>never checks out or rewrites anything</span></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>Git Time Machine is MIT licensed. Started at <a href="https://fossunited.org/fosshack/2025">FOSS Hack 2025</a>.</span>
+        <span><a href="guide.html">Docs</a> · <a href="https://github.com/nandhu-44/Git-Time-Machine">GitHub</a> · <a href="https://www.npmjs.com/package/git-tm">npm</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

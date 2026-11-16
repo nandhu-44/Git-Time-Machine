@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Documentation · Git Time Machine</title>
+    <meta name="description" content="How to install and use git-tm: the commit graph, diffs, blame, time travel between commits, search, insights, keyboard shortcuts and troubleshooting." />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="canonical" href="https://git-time-machine.js.org/guide.html" />
+    <link rel="icon" href="logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="site.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main">
+        <a class="brand" href="./"><img src="logo.svg" width="28" height="28" alt="" /><span>Git Time Machine</span></a>
+        <div class="nav-links">
+          <a href="guide.html" aria-current="page">Docs</a>
+          <a href="https://github.com/nandhu-44/Git-Time-Machine">GitHub</a>
+          <a href="https://www.npmjs.com/package/git-tm">npm</a>
+        </div>
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5" /><path d="M8 2.5v11a5.5 5.5 0 0 0 0-11z" fill="currentColor" stroke="none" /></svg>
+        </button>
+      </nav>
+    </header>
+
+    <div class="guide">
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+          <li><a href="#install">Install</a></li>
+          <li><a href="#usage">Usage</a></li>
+          <li><a href="#history">History</a></li>
+          <li><a href="#commits">Commits and diffs</a></li>
+          <li><a href="#browse">Browse and blame</a></li>
+          <li><a href="#time-travel">Time travel</a></li>
+          <li><a href="#search">Search</a></li>
+          <li><a href="#insights">Insights</a></li>
+          <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+          <li><a href="#privacy">Privacy and safety</a></li>
+          <li><a href="#troubleshooting">Troubleshooting</a></li>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#contributing">Contributing</a></li>
+        </ol>
+      </nav>
+
+      <main class="content">
+        <h1>Documentation</h1>
+        <p class="lede">Everything you need to explore a repository with git-tm, from the first run to time travel.</p>
+
+        <h2 id="install">Install</h2>
+        <p>git-tm needs <strong>Node.js 18.3 or newer</strong> and <strong>git</strong> on your <code>PATH</code>. It has no other dependencies.</p>
+        <pre><code>npm install -g git-tm</code></pre>
+        <p>Or try it once without installing:</p>
+        <pre><code>npx git-tm</code></pre>
+
+        <h2 id="usage">Usage</h2>
+        <p>Run it inside any repository, or any folder within one:</p>
+        <pre><code>git tm</code></pre>
+        <p>Then open <code>http://localhost:7890</code>, or add <code>--open</code> to open your browser automatically. The server keeps running until you press <kbd>Ctrl</kbd>+<kbd>C</kbd>.</p>
+
+        <h3 id="git-subcommand">As a Git subcommand</h3>
+        <p>Git runs any program named <code>git-&lt;name&gt;</code> on your <code>PATH</code> as <code>git &lt;name&gt;</code>. npm installs the program as <code>git-tm</code>, so <code>git tm</code> and <code>git-tm</code> are the same thing. These all work:</p>
+        <pre><code>git tm
+git tm ../other-repo
+git -C ../other-repo tm
+git-tm --open</code></pre>
+        <div class="note"><p>Use <code>git tm -h</code> for help. Git handles <code>git tm --help</code> itself and looks for a manual page instead.</p></div>
+
+        <h3 id="options">Options</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Option</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>[path]</code></td><td>Repository to open. Defaults to the current folder; any subfolder of a repository works.</td></tr>
+              <tr><td><code>-p, --port &lt;n&gt;</code></td><td>Port to listen on. Default <code>7890</code>; if it is busy, the next free port is used.</td></tr>
+              <tr><td><code>--host &lt;address&gt;</code></td><td>Interface to bind. Default <code>127.0.0.1</code>, so only your machine can connect.</td></tr>
+              <tr><td><code>-o, --open</code></td><td>Open the browser once the server is running.</td></tr>
+              <tr><td><code>--no-avatars</code></td><td>Do not load author pictures from GitHub or Gravatar; initials are shown instead.</td></tr>
+              <tr><td><code>-v, --version</code></td><td>Print the version.</td></tr>
+              <tr><td><code>-h, --help</code></td><td>Print help.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="history">History</h2>
+        <p>The History view lists commits newest first with a graph of branch lanes and merges. Badges show the current branch, other local branches, remote branches and tags. Merge commits are drawn as hollow dots, and <code>HEAD</code> has a ring.</p>
+        <ul>
+          <li><strong>All branches or one:</strong> by default every branch, remote and tag is shown. Click a branch, remote or tag in the sidebar to show only its history, and use the filter box to find refs quickly.</li>
+          <li><strong>Uncommitted changes</strong> appear as a row on top of <code>HEAD</code>, and as an item in the sidebar.</li>
+          <li><strong>Large repositories:</strong> the list only renders what is on screen and loads more history as you scroll.</li>
+          <li><strong>Live updates:</strong> when you commit, switch branches or fetch in a terminal, git-tm refreshes the sidebar and offers to refresh the history.</li>
+          <li><strong>Fetch:</strong> the download button runs <code>git fetch --all --prune</code>. It is the only action that touches the network, and only appears when the repository has remotes.</li>
+        </ul>
+
+        <h2 id="commits">Commits and diffs</h2>
+        <p>Click a commit to open its details next to the list: the full message, author and committer, parents, and every branch and tag that contains it. If the repository has a GitHub, GitLab or Bitbucket remote, a button opens the commit there.</p>
+        <ul>
+          <li><strong>Unified or split</strong> diffs, with changed words highlighted inside each line.</li>
+          <li><strong>Hide whitespace</strong> ignores indentation-only changes.</li>
+          <li><strong>Show full file</strong> expands a diff to the whole file.</li>
+          <li><strong>Merge commits</strong> can be compared against any of their parents.</li>
+          <li>Small change sets open automatically; large ones load each file when you expand it.</li>
+        </ul>
+
+        <h2 id="browse">Browse and blame</h2>
+        <p>The <strong>Files</strong> tab of a commit shows the repository exactly as it was at that commit. Open any folder or file; for a file, <strong>Blame</strong> shows which commit last changed each line, and <strong>History</strong> lists every commit that touched it, following renames.</p>
+        <figure>
+          <img src="img/blame.jpg" width="1920" height="1140" loading="lazy" alt="A file viewed at an older commit with blame next to each line" />
+          <figcaption>A file at an earlier commit, with blame.</figcaption>
+        </figure>
+
+        <h2 id="time-travel">Time travel</h2>
+        <p>The <strong>Compare</strong> view answers one question: <em>what happens if I move from this point in history to that one?</em> Pick a <strong>From</strong> and a <strong>To</strong>. Each can be a commit, branch, tag or, for To, your working tree. Type a name or short commit id, or use the picker button to search.</p>
+
+        <h3 id="directions">Directions</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Direction</th><th>When</th><th>What you see</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Forward in time</strong></td><td>To contains From</td><td>The commits applied on the way, and how much later To is.</td></tr>
+              <tr><td><strong>Back in time</strong></td><td>From contains To</td><td>The commits undone on the way back.</td></tr>
+              <tr><td><strong>Across branches</strong></td><td>They diverged</td><td>The commits undone back to the common ancestor, then the commits applied to reach To.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The <strong>⇄</strong> button reverses the trip.</p>
+
+        <h3 id="stepping">Stepping through the journey</h3>
+        <p>The slider walks through the snapshots between From and To, one commit at a time: back along From's first parents to the common ancestor, then forward along To's. At each step the file list shows what has changed so far. Use the arrow buttons, the arrow keys, or click a commit in the <em>Applied</em> or <em>Undone</em> list to jump to it. The current step is kept in the URL, so you can share or reload it.</p>
+        <figure>
+          <img src="img/time-travel.jpg" width="1920" height="1140" loading="lazy" alt="Compare view stepped back to step 4 of 6 between two commits" />
+          <figcaption>Stepping through a forward journey. The highlighted commit is the current step.</figcaption>
+        </figure>
+
+        <h3 id="picking">Picking commits from History</h3>
+        <ul>
+          <li>Press <kbd>t</kbd> or the <strong>Time travel</strong> button, click the From commit, then the To commit, then <strong>Travel</strong>.</li>
+          <li>In a commit's details, use <strong>Travel from here</strong> or <strong>Travel to here</strong>.</li>
+          <li>With a commit open, <kbd>Shift</kbd>-click another to travel from the open one to it.</li>
+        </ul>
+        <figure>
+          <img src="img/pick.jpg" width="1920" height="1140" loading="lazy" alt="History in time travel mode with From and To selected and the travel bar at the bottom" />
+          <figcaption>Time travel mode: the bar at the bottom shows your From and To.</figcaption>
+        </figure>
+
+        <h3 id="modes">Direct or since branch point</h3>
+        <p><strong>Direct</strong> (<code>a..b</code> in the URL) shows everything that differs between the two snapshots. <strong>Since branch point</strong> (<code>a...b</code>) shows only what To added after the two diverged, the way a pull request does.</p>
+
+        <h2 id="search">Search</h2>
+        <p>Press <kbd>/</kbd> to focus the search box. Plain words search commit messages; prefixes narrow the search:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Query</th><th>Finds</th></tr></thead>
+            <tbody>
+              <tr><td><code>fix login</code></td><td>Commits whose message contains the text (case-insensitive)</td></tr>
+              <tr><td><code>author:ada</code></td><td>Commits by an author, matching name or email</td></tr>
+              <tr><td><code>path:src/app.js</code></td><td>Commits that touched a file or folder (a file's <strong>History</strong> button also follows renames)</td></tr>
+              <tr><td><code>code:parseConfig</code></td><td>Commits that added or removed a string (<code>git log -S</code>)</td></tr>
+              <tr><td><code>a1b2c3d</code></td><td>Jumps straight to a commit</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Prefixes can be combined, for example <code>author:ada path:src</code>. Use quotes for spaces: <code>author:"Ada Lovelace"</code>. Each active filter appears as a chip above the list; press <kbd>Esc</kbd> to clear.</p>
+
+        <h2 id="insights">Insights</h2>
+        <p>Insights summarises the history of all branches, or of the branch selected in the sidebar: total commits, contributors, branches and tags, an activity heatmap for the past year, the weekly rhythm by day and hour, and the top contributors. Click a contributor to see their commits. Merge commits are left out, and <code>.mailmap</code> is respected.</p>
+        <figure>
+          <img src="img/insights.jpg" width="1920" height="1140" loading="lazy" alt="Insights with commit totals, an activity heatmap, contributors and weekly rhythm" />
+        </figure>
+
+        <h2 id="shortcuts">Keyboard shortcuts</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><kbd>j</kbd> <kbd>k</kbd> or <kbd>↓</kbd> <kbd>↑</kbd></td><td>Next / previous commit</td></tr>
+              <tr><td><kbd>Enter</kbd></td><td>Open the selected commit (or pick it in time travel mode)</td></tr>
+              <tr><td><kbd>t</kbd></td><td>Time travel mode: pick From, then To</td></tr>
+              <tr><td><kbd>Shift</kbd> + click</td><td>Travel from the open commit to the clicked one</td></tr>
+              <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Step through a journey in Compare</td></tr>
+              <tr><td><kbd>/</kbd></td><td>Search</td></tr>
+              <tr><td><kbd>Esc</kbd></td><td>Leave time travel mode, close the commit, or clear the search</td></tr>
+              <tr><td><kbd>g</kbd> then <kbd>h</kbd> / <kbd>c</kbd> / <kbd>i</kbd></td><td>Go to History / Compare / Insights</td></tr>
+              <tr><td><kbd>?</kbd></td><td>Show all shortcuts</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="privacy">Privacy and safety</h2>
+        <ul>
+          <li><strong>Local only.</strong> The server listens on <code>127.0.0.1</code> and rejects requests addressed to any other host name, so other websites cannot read your repository through your browser.</li>
+          <li><strong>Read-only.</strong> git-tm never checks out, commits, resets or rewrites anything. The only command that uses the network is Fetch, and only when you press it.</li>
+          <li><strong>Safe input.</strong> Everything you type is validated before it reaches git and can never be read as a git option.</li>
+          <li><strong>Avatars</strong> are loaded from GitHub for <code>users.noreply.github.com</code> addresses and from Gravatar otherwise. Use <code>--no-avatars</code> to keep everything offline.</li>
+        </ul>
+
+        <h2 id="troubleshooting">Troubleshooting</h2>
+        <h3 id="blocked">“Your browser blocked this request”</h3>
+        <p>An ad blocker or privacy extension cancelled one of git-tm's requests to <code>localhost</code>. git-tm avoids the URL patterns these filter lists are known to block, but if it happens, allow <code>localhost</code> in the extension and reload.</p>
+        <h3 id="lost-connection">“Lost connection to git-tm”</h3>
+        <p>The git-tm process stopped, for example because its terminal was closed or <kbd>Ctrl</kbd>+<kbd>C</kbd> was pressed. Start it again; the page reconnects by itself.</p>
+        <h3 id="port">Port already in use</h3>
+        <p>git-tm moves to the next free port and prints the address it chose. Use <code>-p</code> to pick one yourself.</p>
+        <h3 id="help-man">“No manual entry for git-tm”</h3>
+        <p>That is Git answering <code>git tm --help</code>. Use <code>git tm -h</code> or <code>git-tm --help</code>.</p>
+        <h3 id="not-repo">“Not a git repository”</h3>
+        <p>Run git-tm inside a repository or pass its path: <code>git tm path/to/repo</code>.</p>
+
+        <h2 id="how-it-works">How it works</h2>
+        <p>git-tm starts a small HTTP server built only on Node's standard library. It asks <code>git</code> for machine-readable output (for example <code>git log --format=…</code>, <code>git diff --raw -z</code>, <code>git blame --porcelain</code>), so it supports everything your installed git does: worktrees, submodules, SHA-256 repositories and <code>.mailmap</code>. The interface is plain HTML, CSS and JavaScript modules, with no framework and no build step.</p>
+        <pre><code>src/
+  cli.js           <span class="comment"># command-line entry point</span>
+  server.js        <span class="comment"># HTTP server and JSON API</span>
+  git.js           <span class="comment"># git commands and output parsing</span>
+  public/          <span class="comment"># the web interface</span>
+test/              <span class="comment"># node:test suites</span>
+docs/              <span class="comment"># this website</span></code></pre>
+
+        <h2 id="contributing">Contributing</h2>
+        <p>Issues and pull requests are welcome on <a href="https://github.com/nandhu-44/Git-Time-Machine">GitHub</a>. There is nothing to install or build:</p>
+        <pre><code>git clone https://github.com/nandhu-44/Git-Time-Machine.git
+cd Git-Time-Machine
+node src/cli.js .</code></pre>
+        <p>Run the tests with <code>npm test</code>. Releases are published to npm from GitHub Actions when a version tag is pushed (<code>npm version patch</code>, then <code>git push origin main --follow-tags</code>).</p>
+        <p>This website lives in the <code>docs/</code> folder and is served by GitHub Pages.</p>
+
+        <div class="pager">
+          <a class="btn" href="./">← Home</a>
+          <a class="btn" href="https://github.com/nandhu-44/Git-Time-Machine/issues">Report an issue</a>
+        </div>
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>Git Time Machine is MIT licensed. Started at <a href="https://fossunited.org/fosshack/2025">FOSS Hack 2025</a>.</span>
+        <span><a href="./">Home</a> · <a href="https://github.com/nandhu-44/Git-Time-Machine">GitHub</a> · <a href="https://www.npmjs.com/package/git-tm">npm</a></span>
+      </div>
+    </footer>
+  </body>
+</html>
