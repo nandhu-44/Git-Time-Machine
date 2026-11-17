@@ -1,7 +1,7 @@
 {
   "name": "git-tm",
   "version": "1.0.1",
-  "description": "Explore any Git repository's history in your browser: commit graph, diffs, blame, compare and insights. Zero dependencies.",
+  "description": "Explore any Git repository in your browser: commit graph, diffs, blame, insights and time travel between any two commits. Zero dependencies.",
   "type": "module",
   "bin": {
     "git-tm": "src/cli.js"
@@ -24,17 +24,26 @@
     "git",
     "git-tm",
     "git-time-machine",
+    "time-travel",
     "git-history",
+    "git-log",
+    "git-graph",
     "commit-graph",
+    "git-gui",
+    "git-ui",
+    "history-viewer",
     "diff",
     "blame",
+    "compare",
     "cli",
-    "visualization"
+    "developer-tools",
+    "visualization",
+    "zero-dependency"
   ],
   "author": "nandhu-44",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nandhu-44/Git-Time-Machine/issues"
   },
-  "homepage": "https://github.com/nandhu-44/Git-Time-Machine#readme"
+  "homepage": "https://git-time-machine.js.org"
 }

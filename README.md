@@ -4,7 +4,7 @@
   <h1>Git Time Machine</h1>
 
   <p>Explore any Git repository's history in your browser.<br>
-  Commit graph, diffs, blame, compare and insights. One command, zero dependencies.</p>
+  Commit graph, diffs, blame, insights and time travel between any two commits. One command, zero dependencies.</p>
 
   <a href="https://www.npmjs.com/package/git-tm"><img src="https://img.shields.io/npm/v/git-tm?color=f05133" alt="npm version"></a>
   <img src="https://img.shields.io/badge/dependencies-0-2ea44f" alt="zero dependencies">
