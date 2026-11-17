@@ -37,8 +37,7 @@
     "compare",
     "cli",
     "developer-tools",
-    "visualization",
-    "zero-dependency"
+    "visualization"
   ],
   "author": "nandhu-44",
   "license": "MIT",
