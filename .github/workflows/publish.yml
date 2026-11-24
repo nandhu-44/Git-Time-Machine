@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # lets npm verify this workflow and attach provenance
+  id-token: write
 
 jobs:
   publish:
@@ -19,7 +19,6 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
-      # Trusted publishing needs npm 11.5.1 or newer.
       - run: npm install -g npm@latest
 
       - name: Check the tag matches package.json

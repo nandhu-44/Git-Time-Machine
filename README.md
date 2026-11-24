@@ -143,11 +143,9 @@ src/
 test/              node:test suites
 ```
 
-## Development
+## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for how the project is organised, its principles and how to send a pull request.
-
-There is nothing to install or build. Clone and run:
+Contributions are welcome! There is nothing to install or build:
 
 ```bash
 git clone https://github.com/nandhu-44/Git-Time-Machine.git
@@ -155,47 +153,7 @@ cd Git-Time-Machine
 node src/cli.js .
 ```
 
-Run the tests:
-
-```bash
-npm test
-```
-
-Use your working copy as the global `git-tm` command (undo with `npm unlink -g git-tm`):
-
-```bash
-npm link
-```
-
-Check exactly what would be published:
-
-```bash
-npm pack --dry-run
-```
-
-### Releasing
-
-Pushing a version tag publishes to npm from GitHub Actions ([`publish.yml`](.github/workflows/publish.yml)), using npm trusted publishing, so no npm token is stored anywhere.
-
-```bash
-npm version patch
-```
-
-```bash
-git push origin main --follow-tags
-```
-
-`npm version` bumps `package.json`, commits and creates the `vX.Y.Z` tag. Use `minor` or `major` as needed. The workflow checks that the tag matches `package.json`, runs the tests and publishes.
-
-GitLab CI ([`.gitlab-ci.yml`](.gitlab-ci.yml)) runs the same tests. It publishes only if an `NPM_TOKEN` CI/CD variable is set, so a mirrored tag is not published twice.
-
-### Website
-
-The documentation site at [git-time-machine.js.org](https://git-time-machine.js.org) is plain HTML in [`docs/`](docs), served by GitHub Pages from the `main` branch's `/docs` folder. There is no build step; preview it with any static server:
-
-```bash
-python3 -m http.server -d docs 8000
-```
+Run the tests with `npm test`. See [CONTRIBUTING.md](CONTRIBUTING.md) for how the project is organised, its principles and how to send a pull request.
 
 ## Background
 
