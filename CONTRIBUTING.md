@@ -69,7 +69,7 @@ These keep git-tm small, fast and safe. Changes that break them are unlikely to 
 - Plain ES modules, two-space indentation, double quotes, semicolons. Match the code around you.
 - Prefer small, readable functions over clever ones. Comment *why*, not *what*.
 - In the interface, build markup with the `html` tagged template from `ui.js`, which escapes every value. Use `raw()` only for markup you built yourself, never for text from git or the user.
-- Keep the public API in `src/index.js` and `src/types/` in sync. Adding to it is a minor release; changing or removing anything is a major one.
+- Keep the public API in `src/index.js` and `src/types/` in sync. Changing or removing anything in it can break other people's code, so open an issue first.
 
 ## Tests
 
@@ -89,8 +89,6 @@ For interface changes, please check them in a browser in both themes and at phon
 4. Update the README and `docs/` if you change behaviour, options or the API.
 5. Write a clear commit message: a short summary line in the imperative ("Add file history search"), then the reason for the change if it isn't obvious.
 6. Open the pull request and fill in the template.
-
-Maintainers handle version bumps and releases, so don't change the version in `package.json`.
 
 ## Working on the website
 
