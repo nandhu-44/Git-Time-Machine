@@ -23,6 +23,11 @@
   --lane-1: #2f81f7;
   --lane-2: #1f9d55;
   --lane-3: #a259ff;
+  --tok-keyword: #cf222e;
+  --tok-string: #0a3069;
+  --tok-function: #8250df;
+  --tok-number: #0550ae;
+  --tok-comment: #6e7781;
   color-scheme: light;
 }
 
@@ -41,6 +46,11 @@
   --lane-1: #4d9bff;
   --lane-2: #3cc272;
   --lane-3: #b083ff;
+  --tok-keyword: #ff7b72;
+  --tok-string: #a5d6ff;
+  --tok-function: #d2a8ff;
+  --tok-number: #79c0ff;
+  --tok-comment: #8b949e;
   color-scheme: dark;
 }
 
@@ -60,6 +70,11 @@
     --lane-1: #4d9bff;
     --lane-2: #3cc272;
     --lane-3: #b083ff;
+    --tok-keyword: #ff7b72;
+    --tok-string: #a5d6ff;
+    --tok-function: #d2a8ff;
+    --tok-number: #79c0ff;
+    --tok-comment: #8b949e;
     color-scheme: dark;
   }
 }
@@ -144,6 +159,31 @@ pre {
 
 pre .comment {
   color: var(--muted);
+}
+
+.tok-keyword {
+  color: var(--tok-keyword);
+}
+
+.tok-string {
+  color: var(--tok-string);
+}
+
+.tok-function {
+  color: var(--tok-function);
+}
+
+.tok-number {
+  color: var(--tok-number);
+}
+
+.tok-comment {
+  color: var(--tok-comment);
+  font-style: italic;
+}
+
+.tok-punct {
+  color: var(--tok-keyword);
 }
 
 .copy {

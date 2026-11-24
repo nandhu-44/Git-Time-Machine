@@ -53,18 +53,18 @@
 
         <h2 id="install">Install</h2>
         <p>git-tm needs <strong>Node.js 18.3 or newer</strong> and <strong>git</strong> on your <code>PATH</code>. It has no other dependencies.</p>
-        <pre><code>npm install -g git-tm</code></pre>
+        <pre><code class="language-bash">npm install -g git-tm</code></pre>
         <p>Or try it once without installing:</p>
-        <pre><code>npx git-tm</code></pre>
+        <pre><code class="language-bash">npx git-tm</code></pre>
 
         <h2 id="usage">Usage</h2>
         <p>Run it inside any repository, or any folder within one:</p>
-        <pre><code>git tm</code></pre>
+        <pre><code class="language-bash">git tm</code></pre>
         <p>Then open <code>http://localhost:7890</code>, or add <code>--open</code> to open your browser automatically. The server keeps running until you press <kbd>Ctrl</kbd>+<kbd>C</kbd>.</p>
 
         <h3 id="git-subcommand">As a Git subcommand</h3>
         <p>Git runs any program named <code>git-&lt;name&gt;</code> on your <code>PATH</code> as <code>git &lt;name&gt;</code>. npm installs the program as <code>git-tm</code>, so <code>git tm</code> and <code>git-tm</code> are the same thing. These all work:</p>
-        <pre><code>git tm
+        <pre><code class="language-bash">git tm
 git tm ../other-repo
 git -C ../other-repo tm
 git-tm --open</code></pre>
@@ -212,11 +212,11 @@ git-tm --open</code></pre>
 
         <h2 id="api">JavaScript API</h2>
         <p>Everything the web interface uses is also a library, so you can build your own tools on git-tm: scripts, CI reports, editor extensions or a different front end. It is an ES module with TypeScript declarations included and, like the CLI, no dependencies.</p>
-        <pre><code>npm install git-tm</code></pre>
+        <pre><code class="language-bash">npm install git-tm</code></pre>
 
         <h3 id="api-repo">Reading a repository</h3>
         <p><code>openRepo()</code> finds the repository that contains a folder and returns a <code>Repo</code>. Every method accepts any revision git understands: a branch, tag, commit id or <code>HEAD~3</code>.</p>
-        <pre><code>import { openRepo } from "git-tm";
+        <pre><code class="language-js">import { openRepo } from "git-tm";
 
 const repo = await openRepo(".");
 
@@ -228,7 +228,7 @@ const { patch } = await repo.patch("HEAD~1", "HEAD", "README.md");</code></pre>
 
         <h3 id="api-travel">Time travel</h3>
         <p><code>range(from, to)</code> answers the same question as the Compare view: which commits a move applies and undoes, and the snapshots on the way.</p>
-        <pre><code>const trip = await repo.range("v1.0.0", "main");
+        <pre><code class="language-js">const trip = await repo.range("v1.0.0", "main");
 
 console.log(`${trip.addedCount} commits applied, ${trip.removedCount} undone`);
 for (const step of trip.path) console.log(step.hash.slice(0, 7), step.subject);</code></pre>
@@ -257,7 +257,7 @@ for (const step of trip.path) console.log(step.hash.slice(0, 7), step.subject);<
 
         <h3 id="api-server">Embedding the web interface</h3>
         <p>Serve the git-tm interface from your own script, for example with a fixed port or for a repository chosen at run time:</p>
-        <pre><code>import { openRepo, createServer, listen } from "git-tm";
+        <pre><code class="language-js">import { openRepo, createServer, listen } from "git-tm";
 
 const repo = await openRepo("path/to/repo");
 const server = createServer(repo, { avatars: false });
@@ -267,7 +267,7 @@ console.log(`http://localhost:${port}`);</code></pre>
 
         <h3 id="api-graph">Commit graph layout</h3>
         <p>The lane algorithm behind the History graph is pure and works in Node and the browser. Give it commits newest first; each one gets a <code>g</code> property with its column and the lines to draw. Pass the same state again to lay out the next page.</p>
-        <pre><code>import { createLayout, layout } from "git-tm/graph";
+        <pre><code class="language-js">import { createLayout, layout } from "git-tm/graph";
 
 const state = createLayout();
 layout(state, commits);
@@ -301,7 +301,7 @@ docs/              <span class="comment"># this website</span></code></pre>
 
         <h2 id="contributing">Contributing</h2>
         <p>Issues and pull requests are welcome on <a href="https://github.com/nandhu-44/Git-Time-Machine">GitHub</a>. Start with the <a href="https://github.com/nandhu-44/Git-Time-Machine/blob/main/CONTRIBUTING.md">contributing guide</a>: it explains how the code is organised, the project's principles and how to send a pull request. There is nothing to install or build:</p>
-        <pre><code>git clone https://github.com/nandhu-44/Git-Time-Machine.git
+        <pre><code class="language-bash">git clone https://github.com/nandhu-44/Git-Time-Machine.git
 cd Git-Time-Machine
 node src/cli.js .</code></pre>
         <p>Run the tests with <code>npm test</code>. Spotted a mistake on this page? The website lives in the <code>docs/</code> folder, so you can fix it with a pull request too.</p>
