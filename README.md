@@ -145,6 +145,8 @@ test/              node:test suites
 
 ## Development
 
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for how the project is organised, its principles and how to send a pull request.
+
 There is nothing to install or build. Clone and run:
 
 ```bash
