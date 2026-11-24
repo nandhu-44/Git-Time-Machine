@@ -9,13 +9,14 @@
   <a href="https://www.npmjs.com/package/git-tm"><img src="https://img.shields.io/npm/v/git-tm?color=f05133" alt="npm version"></a>
   <img src="https://img.shields.io/badge/dependencies-0-2ea44f" alt="zero dependencies">
   <img src="https://img.shields.io/npm/l/git-tm" alt="license">
-
-  <p><a href="https://git-time-machine.js.org"><b>Documentation</b></a> · <a href="https://www.npmjs.com/package/git-tm">npm</a></p>
+  <a href="https://git-time-machine.js.org"><img src="https://img.shields.io/badge/docs-git--time--machine.js.org-0969da" alt="documentation"></a>
 </div>
 
 <br>
 
 ![Git Time Machine showing a commit graph and a merge commit's changes](docs/screenshot.png)
+
+> **Full documentation:** [git-time-machine.js.org](https://git-time-machine.js.org) covers every feature, time travel, keyboard shortcuts, troubleshooting and the JavaScript API.
 
 ## Install
 
@@ -104,6 +105,21 @@ git tm
 - Keyboard shortcuts: `j`/`k` to move, `Enter` to open, `t` for time travel mode, `←`/`→` to step through a journey, `/` to search, `Esc` to close, `g h`/`g c`/`g i` to switch views, `?` for help
 - Works on phones and tablets
 
+## Use it from code
+
+git-tm is also a library, with TypeScript types included:
+
+```js
+import { openRepo } from "git-tm";
+
+const repo = await openRepo(".");
+const { commits } = await repo.log({ ref: "main", limit: 20 });
+const trip = await repo.range("v1.0.0", "main");
+console.log(`${trip.addedCount} commits applied, ${trip.removedCount} undone`);
+```
+
+Entry points: `git-tm`, `git-tm/git`, `git-tm/server` and `git-tm/graph`. See the [API documentation](https://git-time-machine.js.org/guide.html#api) for every method.
+
 ## Privacy and safety
 
 - Everything runs locally. The server binds to `127.0.0.1` and rejects requests for other host names, so other websites cannot read your repository.
@@ -117,11 +133,13 @@ git tm
 ```
 src/
   cli.js           command-line entry point
+  index.js         JavaScript API
   server.js        HTTP server and JSON API
   git.js           git commands and output parsing
   public/          the web interface
     js/graph.js    commit graph layout
     js/diff.js     diff rendering
+  types/           TypeScript declarations
 test/              node:test suites
 ```
 

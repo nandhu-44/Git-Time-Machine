@@ -1,8 +1,3 @@
-# Publishes to npm when a version tag (v1.2.3) is pushed.
-# Uses npm trusted publishing (OIDC): no npm token is stored on GitHub.
-# One-time setup on npmjs.com: package git-tm > Settings > Trusted Publisher >
-# GitHub Actions, repository nandhu-44/Git-Time-Machine, workflow publish.yml.
-
 name: Publish
 
 on:

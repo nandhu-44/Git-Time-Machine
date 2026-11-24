@@ -41,6 +41,7 @@
           <li><a href="#shortcuts">Keyboard shortcuts</a></li>
           <li><a href="#privacy">Privacy and safety</a></li>
           <li><a href="#troubleshooting">Troubleshooting</a></li>
+          <li><a href="#api">JavaScript API</a></li>
           <li><a href="#how-it-works">How it works</a></li>
           <li><a href="#contributing">Contributing</a></li>
         </ol>
@@ -209,13 +210,92 @@ git-tm --open</code></pre>
         <h3 id="not-repo">“Not a git repository”</h3>
         <p>Run git-tm inside a repository or pass its path: <code>git tm path/to/repo</code>.</p>
 
+        <h2 id="api">JavaScript API</h2>
+        <p>Everything the web interface uses is also a library, so you can build your own tools on git-tm: scripts, CI reports, editor extensions or a different front end. It is an ES module with TypeScript declarations included and, like the CLI, no dependencies.</p>
+        <pre><code>npm install git-tm</code></pre>
+
+        <h3 id="api-repo">Reading a repository</h3>
+        <p><code>openRepo()</code> finds the repository that contains a folder and returns a <code>Repo</code>. Every method accepts any revision git understands: a branch, tag, commit id or <code>HEAD~3</code>.</p>
+        <pre><code>import { openRepo } from "git-tm";
+
+const repo = await openRepo(".");
+
+const { branch, branches, tags } = await repo.info();
+const { commits } = await repo.log({ ref: "main", limit: 20 });
+const commit = await repo.commit("HEAD");
+const { files, additions, deletions } = await repo.files("HEAD~1", "HEAD");
+const { patch } = await repo.patch("HEAD~1", "HEAD", "README.md");</code></pre>
+
+        <h3 id="api-travel">Time travel</h3>
+        <p><code>range(from, to)</code> answers the same question as the Compare view: which commits a move applies and undoes, and the snapshots on the way.</p>
+        <pre><code>const trip = await repo.range("v1.0.0", "main");
+
+console.log(`${trip.addedCount} commits applied, ${trip.removedCount} undone`);
+for (const step of trip.path) console.log(step.hash.slice(0, 7), step.subject);</code></pre>
+
+        <h3 id="api-reference">Repo methods</h3>
+        <div class="table-wrap">
+          <table class="stack">
+            <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+            <tbody>
+              <tr><td><code>info()</code></td><td>Current branch, <code>HEAD</code>, branches with ahead/behind counts, remote branches, tags and the number of uncommitted changes.</td></tr>
+              <tr><td><code>log(options)</code></td><td>One page of commits. Options: <code>ref</code>, <code>skip</code>, <code>limit</code>, <code>message</code>, <code>author</code>, <code>code</code> (like <code>git log -S</code>), <code>path</code>, <code>follow</code>.</td></tr>
+              <tr><td><code>commit(rev)</code></td><td>Full commit details, including the message body and branch and tag badges.</td></tr>
+              <tr><td><code>containedIn(rev)</code></td><td>Branches, remote branches and tags that contain a commit.</td></tr>
+              <tr><td><code>files(from, to)</code></td><td>Changed files with status, renames and line counts. Pass <code>WORKTREE</code> as <code>to</code> for uncommitted changes.</td></tr>
+              <tr><td><code>patch(from, to, file)</code></td><td>The unified diff for one file.</td></tr>
+              <tr><td><code>range(from, to)</code></td><td>Commits applied and undone between two points, the merge base, and the step-by-step path.</td></tr>
+              <tr><td><code>tree(rev, dir)</code></td><td>Folder listing at a commit.</td></tr>
+              <tr><td><code>blob(rev, file)</code></td><td>File contents at a commit.</td></tr>
+              <tr><td><code>blame(rev, file)</code></td><td>The commit behind every line.</td></tr>
+              <tr><td><code>insights(rev)</code></td><td>Commits per day, the weekly punch card and top contributors.</td></tr>
+              <tr><td><code>run(args)</code></td><td>Run any other git command in the repository.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Failures throw a <code>GitError</code> with a <code>status</code> code (400 for bad input, 404 for an unknown revision). The declaration files describe every field; your editor shows them as you type.</p>
+
+        <h3 id="api-server">Embedding the web interface</h3>
+        <p>Serve the git-tm interface from your own script, for example with a fixed port or for a repository chosen at run time:</p>
+        <pre><code>import { openRepo, createServer, listen } from "git-tm";
+
+const repo = await openRepo("path/to/repo");
+const server = createServer(repo, { avatars: false });
+const port = await listen(server, 7890, "127.0.0.1");
+console.log(`http://localhost:${port}`);</code></pre>
+        <div class="note"><p>Keep the host on <code>127.0.0.1</code> unless you trust everyone on the network: anyone who can reach the server can read the repository.</p></div>
+
+        <h3 id="api-graph">Commit graph layout</h3>
+        <p>The lane algorithm behind the History graph is pure and works in Node and the browser. Give it commits newest first; each one gets a <code>g</code> property with its column and the lines to draw. Pass the same state again to lay out the next page.</p>
+        <pre><code>import { createLayout, layout } from "git-tm/graph";
+
+const state = createLayout();
+layout(state, commits);
+for (const c of commits) console.log(c.g.col, c.g.down, c.g.pass);</code></pre>
+
+        <h3 id="api-entry-points">Entry points</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Import</th><th>Exports</th></tr></thead>
+            <tbody>
+              <tr><td><code>git-tm</code></td><td><code>openRepo</code>, <code>git</code>, <code>GitError</code>, <code>WORKTREE</code>, <code>webUrl</code>, <code>createServer</code>, <code>listen</code>, <code>createLayout</code>, <code>layout</code></td></tr>
+              <tr><td><code>git-tm/git</code></td><td><code>openRepo</code>, <code>git</code>, <code>GitError</code>, <code>WORKTREE</code>, <code>webUrl</code></td></tr>
+              <tr><td><code>git-tm/server</code></td><td><code>createServer</code>, <code>listen</code></td></tr>
+              <tr><td><code>git-tm/graph</code></td><td><code>createLayout</code>, <code>layout</code>, <code>rowSvg</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The package is ESM only. From CommonJS, use <code>await import("git-tm")</code>, or <code>require("git-tm")</code> on Node 20.19 or 22.12 and newer.</p>
+
         <h2 id="how-it-works">How it works</h2>
         <p>git-tm starts a small HTTP server built only on Node's standard library. It asks <code>git</code> for machine-readable output (for example <code>git log --format=…</code>, <code>git diff --raw -z</code>, <code>git blame --porcelain</code>), so it supports everything your installed git does: worktrees, submodules, SHA-256 repositories and <code>.mailmap</code>. The interface is plain HTML, CSS and JavaScript modules, with no framework and no build step.</p>
         <pre><code>src/
   cli.js           <span class="comment"># command-line entry point</span>
+  index.js         <span class="comment"># JavaScript API</span>
   server.js        <span class="comment"># HTTP server and JSON API</span>
   git.js           <span class="comment"># git commands and output parsing</span>
   public/          <span class="comment"># the web interface</span>
+  types/           <span class="comment"># TypeScript declarations</span>
 test/              <span class="comment"># node:test suites</span>
 docs/              <span class="comment"># this website</span></code></pre>
 

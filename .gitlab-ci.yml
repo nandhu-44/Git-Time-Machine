@@ -1,8 +1,3 @@
-# Tests run on every push, merge request and tag.
-# Releases are published from GitHub Actions. The publish job below only runs
-# if you add a masked NPM_TOKEN variable (Settings > CI/CD > Variables), for
-# example if you ever want GitLab to be the publisher instead.
-
 stages:
   - test
   - publish

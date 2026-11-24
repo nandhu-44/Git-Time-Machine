@@ -3,6 +3,27 @@
   "version": "1.0.2",
   "description": "Explore any Git repository in your browser: commit graph, diffs, blame, insights and time travel between any two commits. Zero dependencies.",
   "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./git": {
+      "types": "./src/types/git.d.ts",
+      "default": "./src/git.js"
+    },
+    "./server": {
+      "types": "./src/types/server.d.ts",
+      "default": "./src/server.js"
+    },
+    "./graph": {
+      "types": "./src/types/graph.d.ts",
+      "default": "./src/public/js/graph.js"
+    },
+    "./package.json": "./package.json"
+  },
   "bin": {
     "git-tm": "src/cli.js"
   },
@@ -37,7 +58,8 @@
     "compare",
     "cli",
     "developer-tools",
-    "visualization"
+    "visualization",
+    "api"
   ],
   "author": "nandhu-44",
   "license": "MIT",
