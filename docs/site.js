@@ -64,6 +64,105 @@
       })
       .join("\n");
 
+  // Tap an image to view it full screen, where it can be pinched, dragged,
+  // double-tapped or scrolled to zoom. Tap outside it, the close button or Esc to close.
+  function lightbox(images) {
+    if (!images.length || typeof HTMLDialogElement === "undefined") return;
+    const dlg = document.createElement("dialog");
+    dlg.className = "lightbox";
+    dlg.innerHTML = '<button class="lightbox-close" type="button" aria-label="Close">&times;</button><img alt="" draggable="false" />';
+    document.body.append(dlg);
+    const big = dlg.querySelector("img");
+    big.tabIndex = -1; // focused on open, so the close button shows no focus ring
+    let scale = 1;
+    let x = 0;
+    let y = 0;
+    const apply = () => (big.style.transform = `translate(${x}px, ${y}px) scale(${scale})`);
+    const zoomTo = (s, cx = 0, cy = 0) => {
+      // Keep the point under (cx, cy), relative to the image centre, in place.
+      const next = Math.min(5, Math.max(1, s));
+      x = cx - ((cx - x) * next) / scale;
+      y = cy - ((cy - y) * next) / scale;
+      scale = next;
+      if (scale === 1) x = y = 0;
+      apply();
+    };
+    const centre = (px, py) => {
+      const r = dlg.getBoundingClientRect();
+      return [px - r.width / 2, py - r.height / 2];
+    };
+
+    for (const img of images) {
+      img.classList.add("zoomable");
+      img.addEventListener("click", () => {
+        big.src = img.currentSrc || img.src;
+        big.alt = img.alt;
+        scale = 1;
+        x = y = 0;
+        apply();
+        dlg.showModal();
+        big.focus({ preventScroll: true });
+      });
+    }
+    dlg.querySelector(".lightbox-close").addEventListener("click", () => dlg.close());
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg) dlg.close();
+    });
+
+    const pointers = new Map();
+    let gesture = null;
+    let lastTap = 0;
+    const begin = () => {
+      const p = [...pointers.values()];
+      if (p.length >= 2) {
+        const [a, b] = p;
+        gesture = { pinch: true, dist: Math.hypot(a.x - b.x, a.y - b.y), scale, mid: centre((a.x + b.x) / 2, (a.y + b.y) / 2) };
+      } else if (p.length === 1) {
+        gesture = { pinch: false, px: p[0].x, py: p[0].y, x, y };
+      } else gesture = null;
+    };
+    big.addEventListener("pointerdown", (e) => {
+      big.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      begin();
+    });
+    big.addEventListener("pointermove", (e) => {
+      if (!pointers.has(e.pointerId) || !gesture) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const p = [...pointers.values()];
+      if (gesture.pinch && p.length >= 2) {
+        const d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+        zoomTo((gesture.scale * d) / gesture.dist, ...gesture.mid);
+      } else if (!gesture.pinch && scale > 1) {
+        x = gesture.x + e.clientX - gesture.px;
+        y = gesture.y + e.clientY - gesture.py;
+        apply();
+      }
+    });
+    const end = (e) => {
+      if (!pointers.delete(e.pointerId)) return;
+      if (e.type === "pointerup" && pointers.size === 0 && gesture && !gesture.pinch) {
+        const moved = Math.abs(e.clientX - gesture.px) + Math.abs(e.clientY - gesture.py) > 10;
+        const now = Date.now();
+        if (!moved && now - lastTap < 300) {
+          zoomTo(scale > 1 ? 1 : 2.5, ...centre(e.clientX, e.clientY));
+          lastTap = 0;
+        } else if (!moved) lastTap = now;
+      }
+      begin();
+    };
+    big.addEventListener("pointerup", end);
+    big.addEventListener("pointercancel", end);
+    dlg.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+        zoomTo(scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15), ...centre(e.clientX, e.clientY));
+      },
+      { passive: false },
+    );
+  }
+
   function highlight() {
     for (const code of document.querySelectorAll("pre code[class*='language-']")) {
       const text = code.textContent;
@@ -128,6 +227,8 @@
       });
       pre.append(btn);
     }
+    lightbox(document.querySelectorAll(".content img, .split img"));
+
     for (const btn of document.querySelectorAll("[data-copy]")) {
       btn.addEventListener("click", () => copy(btn.dataset.copy, btn));
     }

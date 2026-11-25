@@ -861,3 +861,67 @@ h3:hover .anchor {
     scroll-behavior: auto;
   }
 }
+
+/* ------------------------------------------------------------------ lightbox */
+
+img.zoomable {
+  cursor: zoom-in;
+}
+
+.lightbox {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.88);
+  overflow: hidden;
+}
+
+.lightbox[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox::backdrop {
+  background: transparent;
+}
+
+.lightbox img {
+  max-width: min(96vw, 1800px);
+  max-height: 88dvh;
+  border-radius: 8px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  outline: none;
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font: 28px/1 var(--font);
+  cursor: pointer;
+}
+
+html:has(.lightbox[open]) {
+  overflow: hidden;
+}
+
+/* On touch screens, pinch-zoom is for the image viewer, not the page. */
+@media (pointer: coarse) {
+  body > :not(.lightbox) {
+    touch-action: pan-x pan-y;
+  }
+}
