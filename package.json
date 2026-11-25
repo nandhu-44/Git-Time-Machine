@@ -1,6 +1,6 @@
 {
   "name": "git-tm",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Explore any Git repository in your browser: commit graph, diffs, blame, insights and time travel between any two commits. Zero dependencies.",
   "type": "module",
   "main": "./src/index.js",
