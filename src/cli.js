@@ -114,6 +114,15 @@ async function main() {
     fail(`Could not start server: ${err.message}`);
   }
 
+  // Handle Ctrl+C and SIGTERM before printing the address, so a signal that
+  // arrives right after startup still shuts down cleanly with exit code 0.
+  const stop = () => {
+    server.close();
+    process.exit(0);
+  };
+  process.on("SIGINT", stop);
+  process.on("SIGTERM", stop);
+
   const shownHost = ["127.0.0.1", "::1", "0.0.0.0", "::"].includes(values.host) ? "localhost" : values.host;
   const url = `http://${shownHost}:${actual}`;
   const info = await repo.info().catch(() => ({}));
@@ -135,13 +144,6 @@ async function main() {
   const report = (err) => console.error(`${c.red("error")} ${err?.stack || err}`);
   process.on("uncaughtException", report);
   process.on("unhandledRejection", report);
-
-  const stop = () => {
-    server.close();
-    process.exit(0);
-  };
-  process.on("SIGINT", stop);
-  process.on("SIGTERM", stop);
 }
 
 main();
