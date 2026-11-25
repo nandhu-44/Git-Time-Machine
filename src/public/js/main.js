@@ -390,7 +390,7 @@ async function boot() {
   try {
     await app.reloadRepo();
   } catch (err) {
-    $("#main").innerHTML = `<div class="empty error"><strong>Could not load the repository</strong><span>${err.message}</span></div>`;
+    $("#main").innerHTML = String(html`<div class="empty error"><strong>Could not load the repository</strong><span>${err.message}</span></div>`);
     return;
   }
   if (!app.repo.remotes.length) $("#fetch-btn").hidden = true;

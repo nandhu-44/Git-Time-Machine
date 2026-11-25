@@ -34,7 +34,7 @@ function heatmap(days, endTs) {
   const size = 11;
   const gap = 3;
   const weeks = Math.ceil(cells.length / 7);
-  const w = 28 + weeks * (size + gap);
+  const w = 28 + weeks * (size + gap) + 20; // room for a month label in the last column
   const h = 18 + 7 * (size + gap);
   let svg = `<svg class="heatmap" viewBox="0 0 ${w} ${h}" role="img" aria-label="Commit activity over the last year">`;
   for (const m of months) svg += `<text x="${28 + m.col * (size + gap)}" y="10" class="axis">${m.name}</text>`;
@@ -52,7 +52,7 @@ function punchcard(punch) {
   const max = Math.max(1, ...punch.flat());
   const cw = 22;
   const rh = 24;
-  const w = 40 + 24 * cw;
+  const w = 40 + 24 * cw + 12; // room for the last hour label
   const h = 7 * rh + 20;
   let svg = `<svg class="punch" viewBox="0 0 ${w} ${h}" role="img" aria-label="Commits by weekday and hour">`;
   for (let d = 0; d < 7; d++) {

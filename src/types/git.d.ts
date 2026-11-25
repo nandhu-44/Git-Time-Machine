@@ -12,7 +12,7 @@ export interface GitOptions {
   raw?: boolean;
   /** Written to git's stdin. */
   input?: string | Buffer;
-  /** Stop reading after this many bytes of output; the result gets `truncated: true`. Default 64 MB. */
+  /** Stop reading after this many bytes of output. With `raw`, the Buffer's `truncated` says whether this happened. Default 64 MB. */
   maxBytes?: number;
   /** Kill git after this many milliseconds. Default 60 000. */
   timeout?: number;
@@ -137,6 +137,8 @@ export interface Range {
   addedCount: number;
   removedCount: number;
   mergeBase: string | null;
+  /** True when the trip is so long that `path` only covers its first 500 steps on each side. */
+  truncated: boolean;
 }
 
 export interface TreeEntry {

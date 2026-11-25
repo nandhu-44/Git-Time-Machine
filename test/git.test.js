@@ -1,8 +1,8 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { rmSync } from "node:fs";
+import { mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { openRepo, webUrl, WORKTREE, GitError } from "../src/git.js";
+import { openRepo, webUrl, git, WORKTREE, GitError } from "../src/git.js";
 import { makeFixture } from "./fixture.js";
 
 let fx;
@@ -107,6 +107,7 @@ test("travelling forward applies commits and steps along first parents", async (
   const r = await repo.range("v0.1", "main");
   assert.equal(r.addedCount, 5);
   assert.equal(r.removedCount, 0);
+  assert.equal(r.truncated, false);
   assert.equal(r.added.length, 5);
   assert.deepEqual(r.removed, []);
   assert.deepEqual(subjects(r.path), ["docs: expand readme", "Merge branch 'feature'", "Add binary <b>file</b>"]);
@@ -180,4 +181,36 @@ test("local branches with slashes are not mistaken for remote branches", async (
     tagged.refs.map((r) => [r.type, r.name]).sort(),
     [["branch", "topic/x"], ["tag", "v0.1"]],
   );
+});
+
+test("untracked symlinks show their target, never files outside the repository", async (t) => {
+  const outside = path.join(fx.dir, "outside");
+  mkdirSync(outside, { recursive: true });
+  writeFileSync(path.join(outside, "secret.txt"), "top secret\n");
+  const link = path.join(fx.repo, "link.txt");
+  const dirLink = path.join(fx.repo, "outdir");
+  try {
+    symlinkSync(path.join(outside, "secret.txt"), link);
+    symlinkSync(outside, dirLink, "dir");
+  } catch {
+    return t.skip("symlinks are not available here");
+  }
+  try {
+    const res = await repo.patch("HEAD", WORKTREE, "link.txt");
+    assert.match(res.patch, /^new file mode 120000/);
+    assert.match(res.patch, /secret\.txt/);
+    assert.doesNotMatch(res.patch, /top secret/);
+    await assert.rejects(repo.patch("HEAD", WORKTREE, "outdir/secret.txt"), (e) => e instanceof GitError && e.status === 400);
+  } finally {
+    rmSync(link, { force: true });
+    rmSync(dirLink, { force: true, recursive: false });
+  }
+});
+
+test("git() always resolves with a plain string, even when output is cut off", async () => {
+  const out = await git(fx.repo, ["log"], { maxBytes: 20 });
+  assert.equal(typeof out, "string");
+  assert.equal(out.length, 20);
+  const buf = await git(fx.repo, ["log"], { raw: true, maxBytes: 20 });
+  assert.equal(buf.truncated, true);
 });

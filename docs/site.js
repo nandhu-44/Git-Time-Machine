@@ -25,21 +25,27 @@
       .join("|"),
     "g",
   );
-  const highlightJs = (src) =>
-    src.replace(JS, (m, com, str, kw, num, fn) => {
-      if (com) return tok("comment", m);
-      if (str) {
+  const highlightJs = (src) => {
+    let out = "";
+    let last = 0;
+    for (const m of src.matchAll(JS)) {
+      const [text, com, str, kw, num] = m;
+      out += esc(src.slice(last, m.index));
+      last = m.index + text.length;
+      if (com) out += tok("comment", text);
+      else if (str && text[0] === "`") {
         // Colour ${...} inside template literals as code.
-        if (m[0] !== "`") return tok("string", m);
-        return m
+        out += text
           .split(/(\$\{[^}]*\})/)
           .map((part) => (part.startsWith("${") ? tok("punct", "${") + highlightJs(part.slice(2, -1)) + tok("punct", "}") : part && tok("string", part)))
           .join("");
-      }
-      if (kw) return tok("keyword", m);
-      if (num) return tok("number", m);
-      return tok("function", m);
-    });
+      } else if (str) out += tok("string", text);
+      else if (kw) out += tok("keyword", text);
+      else if (num) out += tok("number", text);
+      else out += tok("function", text);
+    }
+    return out + esc(src.slice(last));
+  };
   const highlightBash = (src) =>
     src
       .split("\n")
@@ -68,6 +74,18 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     highlight();
+
+    // Respect reduced motion: show the demo's poster instead of playing it.
+    const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    for (const v of document.querySelectorAll("video[autoplay]")) {
+      if (reduceMotion) {
+        v.pause();
+        v.controls = true;
+      } else if (v.paused) {
+        // Some mobile browsers skip autoplay; the video is muted, so starting it is allowed.
+        v.play().catch(() => {});
+      }
+    }
 
     const toggle = document.getElementById("theme-toggle");
     if (toggle) {

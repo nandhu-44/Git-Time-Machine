@@ -111,7 +111,8 @@ a:hover {
   text-decoration: underline;
 }
 
-img {
+img,
+video {
   max-width: 100%;
   height: auto;
 }
@@ -836,6 +837,10 @@ h3:hover .anchor {
 
   .hero {
     padding-top: 44px;
+  }
+
+  .shot {
+    width: calc(100% - 24px);
   }
 
   .install {

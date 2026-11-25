@@ -114,7 +114,14 @@ export function createServer(repo, { avatars = true, host = "127.0.0.1" } = {}) 
   };
 
   async function serveStatic(res, pathname) {
-    const rel = pathname === "/" ? "index.html" : decodeURIComponent(pathname).replace(/^\/+/, "");
+    let rel = "index.html";
+    if (pathname !== "/") {
+      try {
+        rel = decodeURIComponent(pathname).replace(/^\/+/, "");
+      } catch {
+        return send(res, 400, "Bad request");
+      }
+    }
     const file = path.resolve(PUBLIC_DIR, rel);
     if (!file.startsWith(PUBLIC_DIR + path.sep)) return send(res, 403, "Forbidden");
     let body = staticCache.get(file);
@@ -134,7 +141,7 @@ export function createServer(repo, { avatars = true, host = "127.0.0.1" } = {}) 
   return http.createServer(async (req, res) => {
     try {
       if (checkHost) {
-        const h = (req.headers.host || "").replace(/:\d+$/, "");
+        const h = (req.headers.host || "").toLowerCase().replace(/:\d+$/, "");
         if (!LOOPBACK.has(h)) return send(res, 421, "Misdirected request");
       }
       const url = new URL(req.url, "http://localhost");

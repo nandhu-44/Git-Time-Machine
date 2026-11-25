@@ -69,6 +69,16 @@ test("rejects foreign Host headers (DNS rebinding)", async () => {
   assert.equal(res.status, 421);
 });
 
+test("host names are matched case-insensitively", async () => {
+  const res = await request("/api/repo", { headers: { host: `LOCALHOST:${port}` } });
+  assert.equal(res.status, 200);
+});
+
+test("malformed URLs are a bad request, not a server error", async () => {
+  const res = await request("/%E0%A4%A");
+  assert.equal(res.status, 400);
+});
+
 test("POST endpoints require the custom header", async () => {
   const res = await request("/api/fetch", { method: "POST" });
   assert.equal(res.status, 403);

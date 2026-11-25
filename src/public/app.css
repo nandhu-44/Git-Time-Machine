@@ -850,9 +850,14 @@ button.chip:hover {
   font: 500 11.5px var(--mono);
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   max-width: 180px;
   border: 1px solid transparent;
+}
+
+.ref-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ref svg {

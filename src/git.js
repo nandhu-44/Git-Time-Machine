@@ -4,7 +4,7 @@
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFile, stat } from "node:fs/promises";
+import { lstat, readFile, readlink, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 
 export const WORKTREE = "WORKTREE";
@@ -27,7 +27,7 @@ export class GitError extends Error {
   }
 }
 
-/** Run git and resolve with stdout (string, or Buffer when raw). */
+/** Run git and resolve with stdout: a string, or with `raw` a Buffer that has `truncated` set. */
 export function git(cwd, args, { raw = false, input, maxBytes = 64 * MB, timeout = 60_000 } = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn("git", [...GLOBAL_ARGS, ...args], {
@@ -76,8 +76,7 @@ export function git(cwd, args, { raw = false, input, maxBytes = 64 * MB, timeout
         return reject(new GitError(msg.replace(/^(fatal|error): /, ""), 400));
       }
       if (raw) return resolve(Object.assign(buf, { truncated }));
-      const text = buf.toString("utf8");
-      resolve(truncated ? Object.assign(new String(text), { truncated: true }) : text);
+      resolve(buf.toString("utf8"));
     });
     child.stdin.on("error", () => {});
     child.stdin.end(input);
@@ -483,8 +482,8 @@ class Repo {
     const ctx = Math.min(100000, Math.max(0, context | 0));
     const compute = async () => {
       const args = this.diffArgs(a, b, ["-M", `-U${ctx}`, "--no-ext-diff", ...(ignoreWhitespace ? ["-w"] : [])]);
-      const out = await this.run([...args, "--", ...paths], { maxBytes: 4 * MB });
-      return { patch: String(out), truncated: Boolean(out.truncated) };
+      const out = await this.run([...args, "--", ...paths], { raw: true, maxBytes: 4 * MB });
+      return { patch: out.toString("utf8"), truncated: out.truncated };
     };
     if (b === WORKTREE) {
       const res = await compute();
@@ -500,6 +499,16 @@ class Repo {
   async untrackedPatch(p) {
     const full = path.resolve(this.root, p);
     if (!full.startsWith(this.root + path.sep)) throw new GitError("Invalid path", 400);
+    const info = await lstat(full).catch(() => null);
+    if (!info) return { patch: "", truncated: false };
+    // Like git: a symlink's content is its target, never the file it points to.
+    if (info.isSymbolicLink()) {
+      const target = await readlink(full);
+      return { patch: `new file mode 120000\n--- /dev/null\n+++ b/${p}\n@@ -0,0 +1 @@\n+${target}\n\\ No newline at end of file\n`, truncated: false };
+    }
+    // A symlinked folder on the way must not lead outside the repository either.
+    const [realRoot, realFull] = await Promise.all([realpath(this.root), realpath(full)]);
+    if (!realFull.startsWith(realRoot + path.sep)) throw new GitError("Invalid path", 400);
     const buf = await readFile(full).catch(() => null);
     if (!buf) return { patch: "", truncated: false };
     if (isBinary(buf)) return { patch: `Binary files /dev/null and b/${p} differ\n`, truncated: false };
@@ -523,10 +532,11 @@ class Repo {
   async range(from, to) {
     const a = await this.resolve(from);
     const b = await this.resolve(to);
-    const empty = { added: [], removed: [], path: [], addedCount: 0, removedCount: 0, mergeBase: null };
+    const empty = { added: [], removed: [], path: [], addedCount: 0, removedCount: 0, mergeBase: null, truncated: false };
     if (a === WORKTREE || b === WORKTREE || a === b) return empty;
     const log = (...args) => this.run(["log", "--decorate=full", `--format=${LOG_FORMAT}`, ...args]).then(parseLog);
-    const LIMIT = "--max-count=500";
+    const MAX = 500;
+    const LIMIT = `--max-count=${MAX}`;
     const [counts, baseOut, added, removed, down, up] = await Promise.all([
       this.run(["rev-list", "--left-right", "--count", `${a}...${b}`]),
       tryGit(this.root, ["merge-base", a, b]),
@@ -543,7 +553,9 @@ class Repo {
     path.push(...up.reverse()); // then forward to `to`
     if (!path.length || path[path.length - 1].hash !== b) path.push((await log("-1", b))[0]);
 
-    return { added, removed, path, addedCount, removedCount, mergeBase };
+    // Very long trips only include the first MAX steps on each side.
+    const truncated = down.length === MAX || up.length === MAX;
+    return { added, removed, path, addedCount, removedCount, mergeBase, truncated };
   }
 
   // ---------------------------------------------------------- browsing

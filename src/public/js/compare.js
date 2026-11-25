@@ -230,6 +230,7 @@ export function createCompare(app) {
       </div>
       <div class="travel-ends muted small"><span>From</span><span>${plural(path.length, "step")} along the way</span><span>To</span></div>
       <div class="travel-now">${stepLabel()}</div>
+      ${travel.truncated ? html`<div class="diff-note">This trip is too long to show every step: the slider skips part of the middle. The diff and commit lists are complete.</div>` : ""}
     </section>`;
   }
 

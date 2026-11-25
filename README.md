@@ -14,7 +14,7 @@
 
 <br>
 
-![Git Time Machine showing a commit graph and a merge commit's changes](docs/screenshot.png)
+![Demo: picking two commits in History, then stepping through every snapshot between them](docs/img/demo.gif)
 
 > **Full documentation:** [git-time-machine.js.org](https://git-time-machine.js.org) covers every feature, time travel, keyboard shortcuts, troubleshooting and the JavaScript API.
 

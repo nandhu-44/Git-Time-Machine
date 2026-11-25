@@ -150,7 +150,7 @@ export function refBadges(refs, { max = 4 } = {}) {
   return html`<span class="refs">${shown.map(
     (r) => html`<span class="ref ref-${r.type}" title="${r.name}">${
       r.type === "tag" ? raw(icons.tag) : r.type === "head" ? raw(icons.head) : ""
-    }${r.name}</span>`,
+    }<span class="ref-name">${r.name}</span></span>`,
   )}${extra > 0 ? html`<span class="ref ref-more" title="${sorted.slice(max).map((r) => r.name).join(", ")}">+${extra}</span>` : ""}</span>`;
 }
 
