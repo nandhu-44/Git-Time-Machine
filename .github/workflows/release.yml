@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to create or update the release for, for example v1.1.1
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Create or update the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          heading="$(grep -m1 -E "^## ${TAG}(:|$)" CHANGELOG.md || true)"
+          if [ -n "$heading" ]; then
+            title="${heading#\#\# }"
+            awk -v h="$heading" '$0 == h {on = 1; next} on && /^## / {exit} on' CHANGELOG.md > notes.md
+          else
+            title="$TAG"
+          fi
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            if [ -f notes.md ]; then
+              gh release edit "$TAG" --title "$title" --notes-file notes.md
+            fi
+          elif [ -f notes.md ]; then
+            gh release create "$TAG" --title "$title" --notes-file notes.md --verify-tag
+          else
+            gh release create "$TAG" --title "$title" --generate-notes --verify-tag
+          fi
