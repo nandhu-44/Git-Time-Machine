@@ -2,6 +2,10 @@
 
 All notable changes to git-tm. Each version is on [npm](https://www.npmjs.com/package/git-tm) and has a [GitHub release](https://github.com/nandhu-44/Git-Time-Machine/releases).
 
+## Unreleased
+
+- Stopping git-tm (Ctrl+C or SIGTERM) right after it starts now always exits cleanly. Found by the new command-line tests from @avaldivieso-meraki.
+
 ## v1.1.1
 
 _Released 2026-11-25_
