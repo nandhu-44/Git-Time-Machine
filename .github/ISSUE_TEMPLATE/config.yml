@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Questions and ideas
+    url: https://github.com/nandhu-44/Git-Time-Machine/discussions
+    about: Ask how to do something, or share an idea, in Discussions.
   - name: Documentation
     url: https://git-time-machine.js.org/guide.html
     about: Usage, options, troubleshooting and the JavaScript API.

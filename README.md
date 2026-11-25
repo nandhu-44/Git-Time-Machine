@@ -153,7 +153,7 @@ cd Git-Time-Machine
 node src/cli.js .
 ```
 
-Run the tests with `npm test`. See [CONTRIBUTING.md](CONTRIBUTING.md) for how the project is organised, its principles and how to send a pull request.
+Run the tests with `npm test`. Questions and ideas are welcome in [Discussions](https://github.com/nandhu-44/Git-Time-Machine/discussions). See [CONTRIBUTING.md](CONTRIBUTING.md) for how the project is organised, its principles and how to send a pull request.
 
 ## Background
 

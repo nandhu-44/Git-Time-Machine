@@ -4,6 +4,7 @@ Thanks for helping! Bug reports, ideas, docs fixes and code are all welcome. Thi
 
 ## Ways to help
 
+- **Ask a question or share an idea** in [Discussions](https://github.com/nandhu-44/Git-Time-Machine/discussions).
 - **Report a bug** with the [bug report form](https://github.com/nandhu-44/Git-Time-Machine/issues/new?template=bug_report.yml). Include your git-tm, Node.js, git and browser versions and, if you can, the repository (or a small one that shows the problem).
 - **Suggest a feature** with the [feature request form](https://github.com/nandhu-44/Git-Time-Machine/issues/new?template=feature_request.yml). Describe the problem you are trying to solve, not only the solution.
 - **Improve the docs.** The website is plain HTML in [`docs/`](docs); typos and unclear explanations are great first contributions.
@@ -100,7 +101,11 @@ python3 -m http.server -d docs 8000
 
 ## Security issues
 
-Please don't open a public issue for a security problem. Use [GitHub's private vulnerability reporting](https://github.com/nandhu-44/Git-Time-Machine/security/advisories/new) instead.
+Please don't open a public issue for a security problem. Use [GitHub's private vulnerability reporting](https://github.com/nandhu-44/Git-Time-Machine/security/advisories/new) instead; see the [security policy](SECURITY.md).
+
+## Code of conduct
+
+Please be kind and respectful. Everyone taking part is expected to follow the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
