@@ -32,3 +32,11 @@ jobs:
       - run: npm test
 
       - run: npm publish --access public
+
+  release:
+    needs: publish
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ github.ref_name }}
