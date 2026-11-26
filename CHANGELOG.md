@@ -2,10 +2,19 @@
 
 All notable changes to git-tm. Each version is on [npm](https://www.npmjs.com/package/git-tm) and has a [GitHub release](https://github.com/nandhu-44/Git-Time-Machine/releases).
 
-## Unreleased
+## v1.1.2
 
+_Released 2026-11-26_
+
+#### Fixes
 - Stopping git-tm (Ctrl+C or SIGTERM) right after it starts now always exits cleanly. Found by the new command-line tests from @avaldivieso-meraki.
 - The Weekly rhythm chart in Insights fits all 24 hours on desktop without scrolling.
+
+#### Project
+- Command-line tests for `--version`, `--help`, errors and server startup (thanks @avaldivieso-meraki).
+- `npm test` works on Windows with every supported Node.js version.
+- A code of conduct, a security policy and this changelog. GitHub releases are now created from it, and only after the npm package is published.
+- Website: tap screenshots to zoom them, better spacing on phones, and refreshed screenshots.
 
 ## v1.1.1
 
