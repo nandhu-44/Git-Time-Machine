@@ -303,7 +303,7 @@ pre:hover .copy,
 }
 
 .hero {
-  padding: 72px 0 40px;
+  padding-block: 72px 40px;
   text-align: center;
 }
 
@@ -415,7 +415,7 @@ pre:hover .copy,
 }
 
 .section {
-  padding: 64px 0;
+  padding-block: 64px;
 }
 
 .section-head {
@@ -839,16 +839,12 @@ h3:hover .anchor {
     padding-top: 44px;
   }
 
-  .shot {
-    width: calc(100% - 24px);
-  }
-
   .install {
     font-size: 14px;
   }
 
   .section {
-    padding: 44px 0;
+    padding-block: 44px;
   }
 
   .toc ol {
