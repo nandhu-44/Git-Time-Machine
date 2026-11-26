@@ -6,11 +6,9 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeFixture } from "./fixture.js";
-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const cli = path.join(root, "src", "cli.js");
 const pkg = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
-
 function start(args, cwd) {
   const child = spawn(process.execPath, [cli, ...args], { cwd, stdio: ["ignore", "pipe", "pipe"] });
   const output = { stdout: "", stderr: "" };
@@ -20,7 +18,6 @@ function start(args, cwd) {
   }
   return { child, output };
 }
-
 function finished(child) {
   return new Promise((resolve, reject) => {
     child.on("error", reject);
@@ -32,7 +29,6 @@ function run(args, cwd) {
   const { child, output } = start(args, cwd);
   return finished(child).then((code) => ({ code, ...output }));
 }
-
 // Resolve once a running child prints a match, or fail if it exits or hangs.
 function waitFor(child, output, pattern) {
   return new Promise((resolve, reject) => {
@@ -54,7 +50,6 @@ function waitFor(child, output, pattern) {
     check();
   });
 }
-
 test("-v and --version print the version from package.json", async () => {
   for (const flag of ["-v", "--version"]) {
     const { code, stdout } = await run([flag], root);
@@ -62,7 +57,6 @@ test("-v and --version print the version from package.json", async () => {
     assert.equal(stdout.trim(), pkg.version, flag);
   }
 });
-
 test("-h and --help print usage and exit with code 0", async () => {
   for (const flag of ["-h", "--help"]) {
     const { code, stdout } = await run([flag], root);
@@ -72,13 +66,11 @@ test("-h and --help print usage and exit with code 0", async () => {
     assert.ok(stdout.includes(`v${pkg.version}`), flag);
   }
 });
-
 test("an unknown option prints an error and exits with code 1", async () => {
   const { code, stderr } = await run(["--unknown-option"], root);
   assert.equal(code, 1);
   assert.match(stderr, /error/);
 });
-
 test("a folder that is not a repository prints an error and exits with code 1", async () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "git-tm-cli-test-"));
   try {
@@ -90,7 +82,6 @@ test("a folder that is not a repository prints an error and exits with code 1", 
     rmSync(dir, { recursive: true, force: true });
   }
 });
-
 test("-p 0 starts a server and can be stopped cleanly", async (t) => {
   const fx = makeFixture();
   let child;
@@ -103,6 +94,11 @@ test("-p 0 starts a server and can be stopped cleanly", async (t) => {
     child = started.child;
     const url = await waitFor(child, started.output, /http:\/\/localhost:(\d+)/);
     assert.ok(Number(url[1]) > 0);
+
+    // This child uses piped stdin, not a TTY, so interactive raw-mode shortcuts
+    // must stay disabled and the existing non-interactive hint must remain.
+    await waitFor(child, started.output, /Press Ctrl\+C to stop/);
+    assert.doesNotMatch(started.output.stdout, /Press o to open/);
 
     const stopped = new Promise((resolve) => child.once("close", (code) => resolve(code)));
     child.kill("SIGTERM");
