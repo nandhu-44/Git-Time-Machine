@@ -50,7 +50,7 @@ function heatmap(days, endTs) {
 
 function punchcard(punch) {
   const max = Math.max(1, ...punch.flat());
-  const cw = 22;
+  const cw = 16;
   const rh = 24;
   const w = 40 + 24 * cw + 12; // room for the last hour label
   const h = 7 * rh + 20;
@@ -60,7 +60,7 @@ function punchcard(punch) {
     for (let hr = 0; hr < 24; hr++) {
       const v = punch[d][hr];
       if (!v) continue;
-      const r = 2 + Math.sqrt(v / max) * 8;
+      const r = 2 + Math.sqrt(v / max) * 5; // at most 7, so neighbouring hours never overlap
       svg += `<circle cx="${40 + hr * cw + cw / 2}" cy="${d * rh + rh / 2}" r="${r.toFixed(1)}"><title>${plural(v, "commit")} · ${DAYS[d]} ${hr}:00</title></circle>`;
     }
   }

@@ -2239,7 +2239,7 @@ mark.del {
 .punch {
   display: block;
   width: 100%;
-  min-width: 520px;
+  min-width: 360px;
 }
 
 .punch circle {

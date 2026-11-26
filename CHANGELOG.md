@@ -5,6 +5,7 @@ All notable changes to git-tm. Each version is on [npm](https://www.npmjs.com/pa
 ## Unreleased
 
 - Stopping git-tm (Ctrl+C or SIGTERM) right after it starts now always exits cleanly. Found by the new command-line tests from @avaldivieso-meraki.
+- The Weekly rhythm chart in Insights fits all 24 hours on desktop without scrolling.
 
 ## v1.1.1
 
