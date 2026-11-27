@@ -8,6 +8,7 @@ import { openRepo } from "./git.js";
 import { createServer, listen } from "./server.js";
 
 const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+
 const useColor = process.stdout.isTTY && !process.env.NO_COLOR && process.env.TERM !== "dumb";
 const paint = (code) => (s) => (useColor ? `\x1b[${code}m${s}\x1b[0m` : String(s));
 const c = {
@@ -21,9 +22,11 @@ const c = {
 
 const HELP = `
 ${c.accent(c.bold("git-tm"))} ${c.dim(`v${pkg.version}`)}  Explore a repository's history in your browser
+
 ${c.bold("Usage")}
   git-tm [path] [options]
   git tm [path] [options]    ${c.dim("same thing, as a Git subcommand (use -h for help)")}
+
 ${c.bold("Options")}
   -p, --port <number>   Port to listen on ${c.dim("(default 7890, next free port is used if busy)")}
       --host <address>  Interface to bind ${c.dim("(default 127.0.0.1)")}
@@ -31,6 +34,7 @@ ${c.bold("Options")}
       --no-avatars      Do not load author avatars from GitHub / Gravatar
   -v, --version         Print the version
   -h, --help            Print this help
+
 ${c.bold("Examples")}
   git-tm                 ${c.dim("current directory")}
   git-tm ../other-repo   ${c.dim("another repository")}
@@ -44,6 +48,7 @@ function fail(message) {
   console.error(c.dim("Run git-tm --help for usage."));
   process.exit(1);
 }
+
 function parse() {
   try {
     return parseArgs({
@@ -62,6 +67,7 @@ function parse() {
     fail(err.message);
   }
 }
+
 function openBrowser(url) {
   const [cmd, args] =
     process.platform === "darwin"
@@ -77,6 +83,7 @@ function openBrowser(url) {
     /* no browser available; the URL is printed anyway */
   }
 }
+
 function tildify(p) {
   const home = os.homedir();
   return p === home || p.startsWith(home + path.sep) ? "~" + p.slice(home.length) : p;
@@ -87,6 +94,7 @@ async function main() {
   if (values.help) return console.log(HELP);
   if (values.version) return console.log(pkg.version);
   if (positionals.length > 1) fail("Only one repository path can be given");
+
   const port = Number(values.port);
   if (!Number.isInteger(port) || port < 0 || port > 65535) fail(`Invalid port: ${values.port}`);
 
@@ -97,6 +105,7 @@ async function main() {
   } catch (err) {
     fail(err.message);
   }
+
   const server = createServer(repo, { avatars: !values["no-avatars"], host: values.host });
   let actual;
   try {
@@ -142,12 +151,15 @@ async function main() {
   const url = `http://${shownHost}:${actual}`;
   const info = await repo.info().catch(() => ({}));
   const where = info.branch ?? (info.head ? info.head.slice(0, 7) : "no commits yet");
+
   console.log();
   console.log(`  ${c.accent(c.bold("git-tm"))} ${c.dim(`v${pkg.version}`)}`);
   console.log();
   console.log(`  ${c.dim("repo")}  ${tildify(repo.root)} ${c.dim(`(${where})`)}`);
   console.log(`  ${c.dim("url ")}  ${c.cyan(url)}`);
   if (actual !== port && port !== 0) console.log(`  ${c.dim(`port ${port} was busy, using ${actual}`)}`);
+  console.log();
+  console.log(c.dim("  Press Ctrl+C to stop"));
   console.log();
 
   if (values.open) openBrowser(url);
