@@ -114,9 +114,33 @@ async function main() {
     fail(`Could not start server: ${err.message}`);
   }
 
+  let rawModeEnabled = false;
+  let stopping = false;
+  let onKeypress;
+  const restoreTerminal = () => {
+    if (onKeypress) {
+      process.stdin.off("data", onKeypress);
+      onKeypress = undefined;
+    }
+    if (!rawModeEnabled) return;
+    try {
+      process.stdin.setRawMode(false);
+    } catch {
+      // The process may be exiting after the terminal has already disconnected.
+    }
+    rawModeEnabled = false;
+    process.stdin.pause();
+  };
+
+  // Restore terminal input even if another code path exits the process.
+  process.once("exit", restoreTerminal);
+
   // Handle Ctrl+C and SIGTERM before printing the address, so a signal that
   // arrives right after startup still shuts down cleanly with exit code 0.
   const stop = () => {
+    if (stopping) return;
+    stopping = true;
+    restoreTerminal();
     server.close();
     process.exit(0);
   };
@@ -139,6 +163,46 @@ async function main() {
   console.log();
 
   if (values.open) openBrowser(url);
+
+  let interactiveInput = false;
+  if (process.stdin.isTTY && typeof process.stdin.setRawMode === "function") {
+    try {
+      process.stdin.setRawMode(true);
+      rawModeEnabled = true;
+      onKeypress = (chunk) => {
+        for (const key of chunk.toString()) {
+          const normalizedKey = key.toLowerCase();
+          if (key === "\u0003" || normalizedKey === "q") {
+            stop();
+            return;
+          }
+          if (normalizedKey === "o") {
+            openBrowser(url);
+          } else if (normalizedKey === "h") {
+            console.log("  Keyboard shortcuts:");
+            console.log("    o       Open browser");
+            console.log("    h       Show shortcuts");
+            console.log("    q       Quit server");
+            console.log("    Ctrl+C  Quit server");
+          }
+        }
+      };
+      process.stdin.on("data", onKeypress);
+      process.stdin.resume();
+      interactiveInput = true;
+    } catch {
+      restoreTerminal();
+    }
+  }
+
+  console.log(
+    c.dim(
+      interactiveInput
+        ? "  Press o to open, h for help, q to quit (Ctrl+C to quit)"
+        : "  Press Ctrl+C to stop",
+    ),
+  );
+  console.log();
 
   // Keep serving if something unexpected goes wrong; say what happened instead of dying silently.
   const report = (err) => console.error(`${c.red("error")} ${err?.stack || err}`);

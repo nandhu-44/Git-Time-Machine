@@ -104,6 +104,11 @@ test("-p 0 starts a server and can be stopped cleanly", async (t) => {
     const url = await waitFor(child, started.output, /http:\/\/localhost:(\d+)/);
     assert.ok(Number(url[1]) > 0);
 
+    // This child uses piped stdin, not a TTY, so interactive raw-mode shortcuts
+    // must stay disabled and the existing non-interactive hint must remain.
+    await waitFor(child, started.output, /Press Ctrl\+C to stop/);
+    assert.doesNotMatch(started.output.stdout, /Press o to open/);
+
     const stopped = new Promise((resolve) => child.once("close", (code) => resolve(code)));
     child.kill("SIGTERM");
     const code = await stopped;
